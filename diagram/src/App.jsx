@@ -34,10 +34,40 @@ const stationData = {
     methods: ['process_registration'],
   },
   queue_nurse: {
-    name: 'Queue to Nurse',
+    name: 'Queue to Nurses',
     description: 'Waiting line for available nurses.',
     attributes: ['queue_policy'],
     methods: ['assign_to_nurse'],
+  },
+  queue_nurse_1: {
+    name: 'Queue to Nurse 1',
+    description: 'Dedicated waiting line for Nurse 1.',
+    attributes: ['queue_length'],
+    methods: ['enqueue', 'dequeue'],
+  },
+  queue_nurse_2: {
+    name: 'Queue to Nurse 2',
+    description: 'Dedicated waiting line for Nurse 2.',
+    attributes: ['queue_length'],
+    methods: ['enqueue', 'dequeue'],
+  },
+  queue_nurse_3: {
+    name: 'Queue to Nurse 3',
+    description: 'Dedicated waiting line for Nurse 3.',
+    attributes: ['queue_length'],
+    methods: ['enqueue', 'dequeue'],
+  },
+  queue_nurse_4: {
+    name: 'Queue to Nurse 4',
+    description: 'Dedicated waiting line for Nurse 4.',
+    attributes: ['queue_length'],
+    methods: ['enqueue', 'dequeue'],
+  },
+  queue_nurse_5: {
+    name: 'Queue to Nurse 5',
+    description: 'Dedicated waiting line for Nurse 5.',
+    attributes: ['queue_length'],
+    methods: ['enqueue', 'dequeue'],
   },
   nurse_1: { name: 'Nurse 1', attributes: ['availability'], methods: ['treat_patient'] },
   nurse_2: { name: 'Nurse 2', attributes: ['availability'], methods: ['treat_patient'] },
@@ -48,16 +78,45 @@ const stationData = {
   leukemia_doctor_1: { name: 'Leukemia Doctor 1', attributes: ['specialty'], methods: ['diagnose'] },
   leukemia_doctor_2: { name: 'Leukemia Doctor 2', attributes: ['specialty'], methods: ['diagnose'] },
   myeloma_doctor: { name: 'Myeloma Doctor', attributes: ['specialty'], methods: ['diagnose'] },
+  queue_leukemia_doctor_1: {
+    name: 'Queue to Leukemia Doctor 1',
+    description: 'Waiting area for Leukemia Doctor 1.',
+    attributes: ['queue_length'],
+    methods: ['enqueue', 'dequeue'],
+  },
+  queue_leukemia_doctor_2: {
+    name: 'Queue to Leukemia Doctor 2',
+    description: 'Waiting area for Leukemia Doctor 2.',
+    attributes: ['queue_length'],
+    methods: ['enqueue', 'dequeue'],
+  },
+  queue_myeloma_doctor: {
+    name: 'Queue to Myeloma Doctor',
+    description: 'Waiting area for Myeloma Doctor.',
+    attributes: ['queue_length'],
+    methods: ['enqueue', 'dequeue'],
+  },
 };
 
-const nurseColor = '#42a5f5';
-const myelomaColor = '#8e24aa';
-const leukemiaColor = '#43a047';
-const otherColor = '#e0e0e0';
-const otherText = '#333';
+const COLORS = {
+  arrival: '#FD3DB5',          // Hot Pink
+  qflow: '#FFB8DC',            // Baby Pink
+  secretary: '#FB6A2C',        // Tangerine Orange
+  nurse: '#8C1946',            // Deep Berry
+  lab: '#D1A1D7',              // Soft Lilac
+  leukemia: '#660066',         // Plum Purple
+  myeloma: '#FFE156',          // Lemon Zest
+};
 
-const yellowGradient = 'linear-gradient(135deg, #fffde7 0%, #ffe082 100%)';
-const orangeGradient = 'linear-gradient(135deg, #ffe0b2 0%, #ff9800 100%)';
+const GRADIENTS = {
+  arrival: 'linear-gradient(135deg, #FD3DB5 0%, #ff69b4 100%)',
+  qflow: 'linear-gradient(135deg, #FFB8DC 0%, #fd3db5 100%)',
+  secretary: 'linear-gradient(135deg, #FB6A2C 0%, #ff9800 100%)',
+  nurse: 'linear-gradient(135deg, #8C1946 0%, #c2185b 100%)',
+  lab: 'linear-gradient(135deg, #D1A1D7 0%, #a084af 100%)',
+  leukemia: 'linear-gradient(135deg, #660066 0%, #a020f0 100%)',
+  myeloma: 'linear-gradient(135deg, #FFE156 0%, #ffd600 100%)',
+};
 
 const nodeStyle = {
   padding: 24,
@@ -66,48 +125,130 @@ const nodeStyle = {
   fontSize: 18,
   fontWeight: 600,
   textAlign: 'center',
-  background: yellowGradient,
-  color: otherText,
+  background: GRADIENTS.qflow,
+  color: '#222',
   border: '2px solid #bdbdbd',
   borderRadius: 20,
   boxShadow: '0 6px 16px rgba(186, 104, 200, 0.1)',
 };
 
-const bloodLabNodeStyle = {
+const arrivalNodeStyle = {
   ...nodeStyle,
-  background: orangeGradient,
-  color: '#111',
-  border: '2px solid #ef6c00',
+  background: GRADIENTS.arrival,
+  color: '#fff',
+  border: `2px solid ${COLORS.arrival}`,
 };
-
+const secretaryNodeStyle = {
+  ...nodeStyle,
+  background: GRADIENTS.secretary,
+  color: '#fff',
+  border: `2px solid ${COLORS.secretary}`,
+};
 const nurseNodeStyle = {
   ...nodeStyle,
-  background: 'linear-gradient(135deg, #90caf9 0%, #42a5f5 100%)',
+  background: GRADIENTS.nurse,
   color: '#fff',
-  border: '2px solid #1565c0',
+  border: `2px solid ${COLORS.nurse}`,
 };
-const myelomaNodeStyle = {
+const bloodLabNodeStyle = {
   ...nodeStyle,
-  background: 'linear-gradient(135deg, #b39ddb 0%, #8e24aa 100%)',
-  color: '#fff',
-  border: '2px solid #6a1b9a',
+  background: GRADIENTS.lab,
+  color: '#222',
+  border: `2px solid ${COLORS.lab}`,
 };
 const leukemiaNodeStyle = {
   ...nodeStyle,
-  background: 'linear-gradient(135deg, #a5d6a7 0%, #43a047 100%)',
+  background: GRADIENTS.leukemia,
   color: '#fff',
-  border: '2px solid #1b5e20',
+  border: `2px solid ${COLORS.leukemia}`,
+};
+const myelomaNodeStyle = {
+  ...nodeStyle,
+  background: GRADIENTS.myeloma,
+  color: '#222',
+  border: `2px solid ${COLORS.myeloma}`,
+};
+
+const QflowQueueNodeStyle = {
+  ...nodeStyle,
+  width: 120,
+  height: 90,
+  background: 'linear-gradient(135deg, #FFB8DC 0%, #fd3db5 100%)',
+  border: `2px dashed ${COLORS.qflow}`,
+  color: '#333',
+  fontStyle: 'italic',
+  opacity: 0.75,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+const SecretaryQueueNodeStyle = {
+  ...nodeStyle,
+  width: 120,
+  height: 90,
+  background: 'linear-gradient(135deg, #FB6A2C 0%, #ff9800 100%)',
+  border: `2px dashed ${COLORS.secretary}`,
+  color: '#333',
+  fontStyle: 'italic',
+  opacity: 0.75,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+const NurseQueueNodeStyle = {
+  ...nodeStyle,
+  width: 120,
+  height: 90,
+  background: 'linear-gradient(135deg, #8C1946 0%, #c2185b 100%)',
+  border: `2px dashed ${COLORS.nurse}`,
+  color: '#fff',
+  fontStyle: 'italic',
+  opacity: 0.75,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+
+const LeukemiaDoctorQueueNodeStyle = {
+  ...nodeStyle,
+  width: 120,
+  height: 90,
+  background: 'linear-gradient(135deg, #660066 0%, #a020f0 100%)',
+  border: `2px dashed ${COLORS.leukemia}`,
+  color: '#fff',
+  fontStyle: 'italic',
+  opacity: 0.75,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+const MyelomaDoctorQueueNodeStyle = {
+  ...nodeStyle,
+  width: 120,
+  height: 90,
+  background: 'linear-gradient(135deg, #FFE156 0%, #ffd600 100%)',
+  border: `2px dashed ${COLORS.myeloma}`,
+  color: '#333',
+  fontStyle: 'italic',
+  opacity: 0.75,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 };
 
 const nurseY = [-300, -150, 0, 150, 300];
 
 const nodes = [
-  { id: 'arrival', data: { label: 'Arrival' }, position: { x: 0, y: 0 }, style: nodeStyle },
-  { id: 'queue_q_flow', data: { label: 'Queue to Q-Flow' }, position: { x: 250, y: 0 }, style: nodeStyle },
+  { id: 'arrival', data: { label: 'Arrival' }, position: { x: 0, y: 0 }, style: arrivalNodeStyle },
+  { id: 'queue_q_flow', type: 'queue', data: { label: 'Queue to Q-Flow' }, position: { x: 275, y: -7.5 }, style: QflowQueueNodeStyle },
   { id: 'q_flow', data: { label: 'Q-Flow' }, position: { x: 500, y: 0 }, style: nodeStyle },
-  { id: 'queue_secretary', data: { label: 'Queue to Secretary' }, position: { x: 750, y: 0 }, style: nodeStyle },
-  { id: 'secretary_station', data: { label: 'Secretary Station' }, position: { x: 1000, y: 0 }, style: nodeStyle },
-  { id: 'queue_nurse', data: { label: 'Queue to Nurse' }, position: { x: 1250, y: 0 }, style: nodeStyle },
+  { id: 'queue_secretary', type: 'queue', data: { label: 'Queue to Secretary' }, position: { x: 775, y: -7.5 }, style: SecretaryQueueNodeStyle },
+  { id: 'secretary_station', data: { label: 'Secretary Station' }, position: { x: 1000, y: 0 }, style: secretaryNodeStyle },
+  { id: 'queue_nurse', type: 'queue', data: { label: 'Queue to Nurses' }, position: { x: 1275, y: -7.5 }, style: NurseQueueNodeStyle },
   ...[1, 2, 3, 4, 5].map((i, idx) => ({
     id: `nurse_${i}`,
     data: { label: `Nurse ${i}` },
@@ -115,39 +256,42 @@ const nodes = [
     style: nurseNodeStyle,
   })),
   { id: 'blood_test_lab', data: { label: 'Blood Test Lab' }, position: { x: 1800, y: 0 }, style: bloodLabNodeStyle },
-  { id: 'leukemia_doctor_1', data: { label: 'Leukemia Doctor 1' }, position: { x: 2050, y: -200 }, style: leukemiaNodeStyle },
-  { id: 'leukemia_doctor_2', data: { label: 'Leukemia Doctor 2' }, position: { x: 2050, y: -80 }, style: leukemiaNodeStyle },
-  { id: 'myeloma_doctor', data: { label: 'Myeloma Doctor' }, position: { x: 2050, y: 150 }, style: myelomaNodeStyle },
+  { id: 'queue_leukemia_doctor_1', type: 'queue', data: { label: 'Queue to Leukemia Doctor 1' }, position: { x: 2025, y: -207.5 }, style: LeukemiaDoctorQueueNodeStyle },
+  { id: 'queue_leukemia_doctor_2', type: 'queue', data: { label: 'Queue to Leukemia Doctor 2' }, position: { x: 2025, y: -87.5 }, style: LeukemiaDoctorQueueNodeStyle },
+  { id: 'queue_myeloma_doctor', type: 'queue', data: { label: 'Queue to Myeloma Doctor' }, position: { x: 2025, y: 142.5 }, style: MyelomaDoctorQueueNodeStyle },
+  { id: 'leukemia_doctor_1', data: { label: 'Leukemia Doctor 1' }, position: { x: 2200, y: -200 }, style: leukemiaNodeStyle },
+  { id: 'leukemia_doctor_2', data: { label: 'Leukemia Doctor 2' }, position: { x: 2200, y: -80 }, style: leukemiaNodeStyle },
+  { id: 'myeloma_doctor', data: { label: 'Myeloma Doctor' }, position: { x: 2200, y: 150 }, style: myelomaNodeStyle },
   {
     id: 'legend',
-    position: { x: 800, y: -300 },
+    position: { x: 400, y: -350 },
     data: {
       label: (
-        <div style={{ fontSize: 16, padding: '10px' }}>
-          <strong style={{ fontSize: 20, marginBottom: '10px', display: 'block', borderBottom: '2px solid #ccc', paddingBottom: '5px' }}>Flow Paths Legend</strong>
-          <div style={{ marginBottom: '8px' }}>
-            <span style={{ color: '#6a1b9a', fontWeight: 'bold' }}>●</span> Myeloma Direct Path
-            <div style={{ fontSize: 14, color: '#666', marginLeft: '20px' }}>Nurse → Myeloma Doctor</div>
+        <div style={{ fontSize: 18, padding: '15px' }}>
+          <strong style={{ fontSize: 24, marginBottom: '15px', display: 'block', borderBottom: '2px solid #ccc', paddingBottom: '8px' }}>Flow Paths Legend</strong>
+          <div style={{ marginBottom: '12px' }}>
+            <span style={{ color: '#6a1b9a', fontWeight: 'bold', fontSize: 20 }}>●</span> <span style={{ fontWeight: 'bold' }}>Myeloma Direct Path</span>
+            <div style={{ fontSize: 16, color: '#333', marginLeft: '25px', marginTop: '5px' }}>Nurse → Myeloma Doctor</div>
           </div>
-          <div style={{ marginBottom: '8px' }}>
-            <span style={{ color: '#ec407a', fontWeight: 'bold' }}>●</span> Myeloma Lab Path
-            <div style={{ fontSize: 14, color: '#666', marginLeft: '20px' }}>Nurse → Blood Lab → Myeloma Doctor</div>
+          <div style={{ marginBottom: '12px' }}>
+            <span style={{ color: '#ec407a', fontWeight: 'bold', fontSize: 20 }}>●</span> <span style={{ fontWeight: 'bold' }}>Myeloma Lab Path</span>
+            <div style={{ fontSize: 16, color: '#333', marginLeft: '25px', marginTop: '5px' }}>Nurse → Blood Lab → Myeloma Doctor</div>
           </div>
-          <div style={{ marginBottom: '8px' }}>
-            <span style={{ color: '#43a047', fontWeight: 'bold' }}>●</span> Leukemia Path
-            <div style={{ fontSize: 14, color: '#666', marginLeft: '20px' }}>Nurse → Blood Lab → Leukemia Doctor</div>
+          <div style={{ marginBottom: '12px' }}>
+            <span style={{ color: '#42a5f5', fontWeight: 'bold', fontSize: 20 }}>●</span> <span style={{ fontWeight: 'bold' }}>Leukemia Path</span>
+            <div style={{ fontSize: 16, color: '#333', marginLeft: '25px', marginTop: '5px' }}>Nurse → Blood Lab → Leukemia Doctor</div>
           </div>
         </div>
       ),
     },
     style: {
-      padding: 15,
-      width: 280,
+      padding: 20,
+      width: 360,
       border: '2px solid #e0e0e0',
       background: '#ffffff',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      fontSize: 15,
+      borderRadius: '12px',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+      fontSize: 16,
     },
     draggable: false,
   },
@@ -177,42 +321,111 @@ const edges = [
     target: 'blood_test_lab',
     style: { stroke: '#ec407a', strokeWidth: 4 },
   })),
-  {
-    id: 'bloodlab-myeloma',
-    source: 'blood_test_lab',
-    target: 'myeloma_doctor',
-    style: { stroke: '#ec407a', strokeWidth: 4 },
-  },
-  ...[1, 2, 3, 4, 5].map(i => ({
-    id: `leukemia-nurse_${i}`,
-    source: `nurse_${i}`,
-    target: 'blood_test_lab',
-    style: { stroke: '#42a5f5', strokeDasharray: '4 2', strokeWidth: 4 },
-  })),
-  {
-    id: 'bloodlab-leukemia-1',
-    source: 'blood_test_lab',
-    target: 'leukemia_doctor_1',
-    style: { stroke: '#42a5f5', strokeWidth: 4 },
-  },
-  {
-    id: 'bloodlab-leukemia-2',
-    source: 'blood_test_lab',
-    target: 'leukemia_doctor_2',
-    style: { stroke: '#42a5f5', strokeWidth: 4 },
-  },
+  { id: 'bloodlab-queue_myeloma', source: 'blood_test_lab', target: 'queue_myeloma_doctor', style: { stroke: '#ec407a', strokeWidth: 4 } },
+  { id: 'bloodlab-queue_leukemia_1', source: 'blood_test_lab', target: 'queue_leukemia_doctor_1', style: { stroke: '#42a5f5', strokeWidth: 4 } },
+  { id: 'bloodlab-queue_leukemia_2', source: 'blood_test_lab', target: 'queue_leukemia_doctor_2', style: { stroke: '#42a5f5', strokeWidth: 4 } },
+  { id: 'queue_myeloma_doctor-myeloma_doctor', source: 'queue_myeloma_doctor', target: 'myeloma_doctor', style: { stroke: '#ec407a', strokeWidth: 4 } },
+  { id: 'queue_leukemia_doctor_1-leukemia_doctor_1', source: 'queue_leukemia_doctor_1', target: 'leukemia_doctor_1', style: { stroke: '#42a5f5', strokeWidth: 4 } },
+  { id: 'queue_leukemia_doctor_2-leukemia_doctor_2', source: 'queue_leukemia_doctor_2', target: 'leukemia_doctor_2', style: { stroke: '#42a5f5', strokeWidth: 4 } },
 ];
 
 export default function App() {
   const [selectedNode, setSelectedNode] = useState(null);
+  const [useIndividualQueues, setUseIndividualQueues] = useState(false);
+
+  // Create individual queue nodes for nurses when toggle is active
+  const individualNurseQueues = useIndividualQueues ? [1, 2, 3, 4, 5].map((i, idx) => ({
+    id: `queue_nurse_${i}`,
+    type: 'queue',
+    data: { label: `Queue to Nurse ${i}` },
+    position: { x: 1275, y: nurseY[idx] },
+    style: NurseQueueNodeStyle,
+  })) : [];
+
+  // Individual queue to nurse edges
+  const individualQueueEdges = useIndividualQueues ? [
+    ...([1, 2, 3, 4, 5].map(i => ({
+      id: `secretary_station-queue_nurse_${i}`,
+      source: 'secretary_station',
+      target: `queue_nurse_${i}`,
+      style: { stroke: '#f8bbd0', strokeWidth: 4 },
+    }))),
+    ...([1, 2, 3, 4, 5].map(i => ({
+      id: `queue_nurse_${i}-nurse_${i}`,
+      source: `queue_nurse_${i}`,
+      target: `nurse_${i}`,
+      style: { stroke: '#f8bbd0', strokeWidth: 4 },
+    })))
+  ] : [];
+
+  // Filter out the common queue and its connections when using individual queues
+  const filteredNodes = [...nodes.filter(node => 
+    !(useIndividualQueues && node.id === 'queue_nurse')
+  ), ...individualNurseQueues];
+
+  const filteredEdges = [...edges.filter(edge => 
+    !(useIndividualQueues && 
+      (edge.id === 'secretary_station-queue_nurse' || 
+       edge.id.startsWith('queue_nurse-nurse_')))
+  ), ...individualQueueEdges];
 
   return (
     <div style={{ height: '100vh', width: '100%', display: 'flex' }}>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, position: 'relative' }}>
+        <div style={{ 
+          position: 'absolute', 
+          top: 10, 
+          right: 10, 
+          zIndex: 10, 
+          background: 'white',
+          padding: '8px 12px',
+          borderRadius: 8,
+          boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          <button 
+            onClick={() => setUseIndividualQueues(!useIndividualQueues)}
+            style={{
+              background: useIndividualQueues ? COLORS.nurse : '#f8bbd0',
+              padding: '8px 16px',
+              border: 'none',
+              borderRadius: 20,
+              color: useIndividualQueues ? 'white' : '#222',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              minWidth: '180px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            {useIndividualQueues ? 'Individual Queues' : 'Single Queue'}
+          </button>
+        </div>
+        
+        <div style={{
+          position: 'absolute',
+          top: 60,
+          right: 10,
+          zIndex: 10,
+          background: 'white',
+          padding: '12px',
+          borderRadius: 8,
+          boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+          width: '300px',
+          fontSize: '14px',
+          lineHeight: 1.4
+        }}>
+          <strong>Queue Policies:</strong><br/>
+          <strong>Single Queue:</strong> One queue serving all nurses<br/>
+          <strong>Individual Queues:</strong> Each nurse has a dedicated queue
+        </div>
+        
         <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodeClick={(event, node) => setSelectedNode(stationData[node.id])}
+          nodes={filteredNodes}
+          edges={filteredEdges}
+          onNodeClick={(event, node) => setSelectedNode(node)}
           fitView
         >
           <Background />
@@ -222,30 +435,121 @@ export default function App() {
       </div>
 
       {selectedNode && (
-        <div style={{ width: 300, padding: 20, background: '#eee', overflowY: 'auto', position: 'relative' }}>
+        <div style={{ 
+          width: 300, 
+          padding: 20, 
+          background: selectedNode.id === 'queue_q_flow' ? QflowQueueNodeStyle.background :
+                     selectedNode.id === 'queue_secretary' ? SecretaryQueueNodeStyle.background :
+                     selectedNode.id === 'queue_nurse' ? NurseQueueNodeStyle.background :
+                     selectedNode.id.startsWith('queue_nurse_') ? NurseQueueNodeStyle.background :
+                     selectedNode.id === 'queue_leukemia_doctor_1' ? LeukemiaDoctorQueueNodeStyle.background :
+                     selectedNode.id === 'queue_leukemia_doctor_2' ? LeukemiaDoctorQueueNodeStyle.background :
+                     selectedNode.id === 'queue_myeloma_doctor' ? MyelomaDoctorQueueNodeStyle.background :
+                     selectedNode.id?.includes('nurse') ? nurseNodeStyle.background :
+                     selectedNode.id?.includes('myeloma') ? myelomaNodeStyle.background :
+                     selectedNode.id?.includes('leukemia') ? leukemiaNodeStyle.background :
+                     selectedNode.id?.includes('blood_test') ? bloodLabNodeStyle.background :
+                     selectedNode.id === 'arrival' ? arrivalNodeStyle.background :
+                     selectedNode.id === 'q_flow' ? nodeStyle.background :
+                     selectedNode.id === 'secretary_station' ? secretaryNodeStyle.background :
+                     nodeStyle.background,
+          color: selectedNode.id === 'queue_q_flow' ? QflowQueueNodeStyle.color :
+                 selectedNode.id === 'queue_secretary' ? SecretaryQueueNodeStyle.color :
+                 selectedNode.id === 'queue_nurse' ? NurseQueueNodeStyle.color :
+                 selectedNode.id.startsWith('queue_nurse_') ? NurseQueueNodeStyle.color :
+                 selectedNode.id === 'queue_leukemia_doctor_1' ? LeukemiaDoctorQueueNodeStyle.color :
+                 selectedNode.id === 'queue_leukemia_doctor_2' ? LeukemiaDoctorQueueNodeStyle.color :
+                 selectedNode.id === 'queue_myeloma_doctor' ? MyelomaDoctorQueueNodeStyle.color :
+                 selectedNode.id?.includes('nurse') || 
+                 selectedNode.id?.includes('leukemia') || 
+                 selectedNode.id === 'arrival' || 
+                 selectedNode.id === 'secretary_station' ? '#fff' : '#222',
+          overflowY: 'auto', 
+          position: 'relative',
+          boxShadow: '0 0 20px rgba(0,0,0,0.1)',
+          borderLeft: '1px solid rgba(0,0,0,0.1)'
+        }}>
           <button
             onClick={() => setSelectedNode(null)}
             style={{
               position: 'absolute',
               top: 10,
               right: 10,
-              background: 'red',
-              color: 'white',
+              background: 'rgba(255,255,255,0.2)',
+              color: selectedNode.id?.includes('nurse') || 
+                     selectedNode.id?.includes('leukemia') || 
+                     selectedNode.id === 'arrival' || 
+                     selectedNode.id === 'secretary_station' ? '#fff' : '#222',
               border: 'none',
               borderRadius: '50%',
               width: '30px',
               height: '30px',
               cursor: 'pointer',
+              fontSize: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              ':hover': {
+                background: 'rgba(255,255,255,0.3)'
+              }
             }}
           >
             ×
           </button>
-          <h2>{selectedNode.name}</h2>
-          <p>{selectedNode.description}</p>
-          <h4>Attributes</h4>
-          <ul>{selectedNode.attributes.map(attr => <li key={attr}>{attr}</li>)}</ul>
-          <h4>Methods</h4>
-          <ul>{selectedNode.methods.map(method => <li key={method}>{method}</li>)}</ul>
+          <h2 style={{ 
+            marginTop: 0,
+            fontSize: '24px',
+            borderBottom: '2px solid rgba(255,255,255,0.2)',
+            paddingBottom: '10px'
+          }}>{stationData[selectedNode.id]?.name || selectedNode.data?.label}</h2>
+          <p style={{ 
+            fontSize: '16px',
+            lineHeight: '1.5',
+            opacity: 0.9
+          }}>{stationData[selectedNode.id]?.description || ''}</p>
+          <h4 style={{ 
+            marginTop: '20px',
+            fontSize: '18px',
+            borderBottom: '1px solid rgba(255,255,255,0.2)',
+            paddingBottom: '5px'
+          }}>Attributes</h4>
+          <ul style={{ 
+            listStyle: 'none',
+            padding: 0,
+            margin: '10px 0'
+          }}>
+            {(stationData[selectedNode.id]?.attributes || []).map(attr => (
+              <li key={attr} style={{
+                padding: '8px 12px',
+                margin: '5px 0',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '6px',
+                fontSize: '14px'
+              }}>{attr}</li>
+            ))}
+          </ul>
+          <h4 style={{ 
+            marginTop: '20px',
+            fontSize: '18px',
+            borderBottom: '1px solid rgba(255,255,255,0.2)',
+            paddingBottom: '5px'
+          }}>Methods</h4>
+          <ul style={{ 
+            listStyle: 'none',
+            padding: 0,
+            margin: '10px 0'
+          }}>
+            {(stationData[selectedNode.id]?.methods || []).map(method => (
+              <li key={method} style={{
+                padding: '8px 12px',
+                margin: '5px 0',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '6px',
+                fontSize: '14px'
+              }}>{method}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

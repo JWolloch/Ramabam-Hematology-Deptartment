@@ -1,5 +1,7 @@
 from pythonSim.SimClasses import Entity
 from numpy import random
+
+
 class Patient(Entity):
     def __init__(self, id, arrival_time, patient_type, probability_of_needing_a_test, probability_of_regular_test, probability_of_complex_test):
         super().__init__(id, arrival_time)
