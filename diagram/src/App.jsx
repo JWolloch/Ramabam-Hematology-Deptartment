@@ -69,15 +69,15 @@ const stationData = {
     attributes: ['queue_length'],
     methods: ['enqueue', 'dequeue'],
   },
-  nurse_1: { name: 'Nurse 1', attributes: ['availability'], methods: ['treat_patient'] },
-  nurse_2: { name: 'Nurse 2', attributes: ['availability'], methods: ['treat_patient'] },
-  nurse_3: { name: 'Nurse 3', attributes: ['availability'], methods: ['treat_patient'] },
-  nurse_4: { name: 'Nurse 4', attributes: ['availability'], methods: ['treat_patient'] },
-  nurse_5: { name: 'Nurse 5', attributes: ['availability'], methods: ['treat_patient'] },
-  blood_test_lab: { name: 'Blood Test Lab', attributes: ['test_capacity'], methods: ['analyze_sample'] },
+  nurse_1: { name: 'Nurse 1', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
+  nurse_2: { name: 'Nurse 2', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
+  nurse_3: { name: 'Nurse 3', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
+  nurse_4: { name: 'Nurse 4', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
+  nurse_5: { name: 'Nurse 5', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
+  blood_test_lab: { name: 'Blood Test Lab', attributes: [''], methods: ['analyze_sample'] },
   leukemia_doctor_1: { name: 'Leukemia Doctor 1', attributes: ['specialty'], methods: ['diagnose'] },
   leukemia_doctor_2: { name: 'Leukemia Doctor 2', attributes: ['specialty'], methods: ['diagnose'] },
-  myeloma_doctor: { name: 'Myeloma Doctor', attributes: ['specialty'], methods: ['diagnose'] },
+  transplant_doctor: { name: 'Transplant Doctor', attributes: ['specialty'], methods: ['diagnose'] },
   queue_leukemia_doctor_1: {
     name: 'Queue to Leukemia Doctor 1',
     description: 'Waiting area for Leukemia Doctor 1.',
@@ -90,9 +90,9 @@ const stationData = {
     attributes: ['queue_length'],
     methods: ['enqueue', 'dequeue'],
   },
-  queue_myeloma_doctor: {
-    name: 'Queue to Myeloma Doctor',
-    description: 'Waiting area for Myeloma Doctor.',
+  queue_transplant_doctor: {
+    name: 'Queue to Transplant Doctor',
+    description: 'Waiting area for Transplant Doctor.',
     attributes: ['queue_length'],
     methods: ['enqueue', 'dequeue'],
   },
@@ -105,7 +105,7 @@ const COLORS = {
   nurse: '#8C1946',            // Deep Berry
   lab: '#D1A1D7',              // Soft Lilac
   leukemia: '#660066',         // Plum Purple
-  myeloma: '#FFE156',          // Lemon Zest
+  transplant: '#FFE156',          // Lemon Zest
 };
 
 const GRADIENTS = {
@@ -115,7 +115,7 @@ const GRADIENTS = {
   nurse: 'linear-gradient(135deg, #8C1946 0%, #c2185b 100%)',
   lab: 'linear-gradient(135deg, #D1A1D7 0%, #a084af 100%)',
   leukemia: 'linear-gradient(135deg, #660066 0%, #a020f0 100%)',
-  myeloma: 'linear-gradient(135deg, #FFE156 0%, #ffd600 100%)',
+  transplant: 'linear-gradient(135deg, #FFE156 0%, #ffd600 100%)',
 };
 
 const nodeStyle = {
@@ -162,11 +162,11 @@ const leukemiaNodeStyle = {
   color: '#fff',
   border: `2px solid ${COLORS.leukemia}`,
 };
-const myelomaNodeStyle = {
+const transplantNodeStyle = {
   ...nodeStyle,
-  background: GRADIENTS.myeloma,
+  background: GRADIENTS.transplant,
   color: '#222',
-  border: `2px solid ${COLORS.myeloma}`,
+  border: `2px solid ${COLORS.transplant}`,
 };
 
 const QflowQueueNodeStyle = {
@@ -226,12 +226,12 @@ const LeukemiaDoctorQueueNodeStyle = {
   justifyContent: 'center',
 };
 
-const MyelomaDoctorQueueNodeStyle = {
+const TransplantDoctorQueueNodeStyle = {
   ...nodeStyle,
   width: 120,
   height: 90,
   background: 'linear-gradient(135deg, #FFE156 0%, #ffd600 100%)',
-  border: `2px dashed ${COLORS.myeloma}`,
+  border: `2px dashed ${COLORS.transplant}`,
   color: '#333',
   fontStyle: 'italic',
   opacity: 0.75,
@@ -258,10 +258,10 @@ const nodes = [
   { id: 'blood_test_lab', data: { label: 'Blood Test Lab' }, position: { x: 1800, y: 0 }, style: bloodLabNodeStyle },
   { id: 'queue_leukemia_doctor_1', type: 'queue', data: { label: 'Queue to Leukemia Doctor 1' }, position: { x: 2025, y: -207.5 }, style: LeukemiaDoctorQueueNodeStyle },
   { id: 'queue_leukemia_doctor_2', type: 'queue', data: { label: 'Queue to Leukemia Doctor 2' }, position: { x: 2025, y: -87.5 }, style: LeukemiaDoctorQueueNodeStyle },
-  { id: 'queue_myeloma_doctor', type: 'queue', data: { label: 'Queue to Myeloma Doctor' }, position: { x: 2025, y: 142.5 }, style: MyelomaDoctorQueueNodeStyle },
+  { id: 'queue_transplant_doctor', type: 'queue', data: { label: 'Queue to Transplant Doctor' }, position: { x: 2025, y: 142.5 }, style: TransplantDoctorQueueNodeStyle },
   { id: 'leukemia_doctor_1', data: { label: 'Leukemia Doctor 1' }, position: { x: 2200, y: -200 }, style: leukemiaNodeStyle },
   { id: 'leukemia_doctor_2', data: { label: 'Leukemia Doctor 2' }, position: { x: 2200, y: -80 }, style: leukemiaNodeStyle },
-  { id: 'myeloma_doctor', data: { label: 'Myeloma Doctor' }, position: { x: 2200, y: 150 }, style: myelomaNodeStyle },
+  { id: 'transplant_doctor', data: { label: 'Transplant Doctor' }, position: { x: 2200, y: 150 }, style: transplantNodeStyle },
   {
     id: 'legend',
     position: { x: 400, y: -350 },
@@ -270,12 +270,12 @@ const nodes = [
         <div style={{ fontSize: 18, padding: '15px' }}>
           <strong style={{ fontSize: 24, marginBottom: '15px', display: 'block', borderBottom: '2px solid #ccc', paddingBottom: '8px' }}>Flow Paths Legend</strong>
           <div style={{ marginBottom: '12px' }}>
-            <span style={{ color: '#6a1b9a', fontWeight: 'bold', fontSize: 20 }}>●</span> <span style={{ fontWeight: 'bold' }}>Myeloma Direct Path</span>
-            <div style={{ fontSize: 16, color: '#333', marginLeft: '25px', marginTop: '5px' }}>Nurse → Myeloma Doctor</div>
+            <span style={{ color: '#6a1b9a', fontWeight: 'bold', fontSize: 20 }}>●</span> <span style={{ fontWeight: 'bold' }}>Transplant Direct Path</span>
+            <div style={{ fontSize: 16, color: '#333', marginLeft: '25px', marginTop: '5px' }}>Nurse → Transplant Doctor</div>
           </div>
           <div style={{ marginBottom: '12px' }}>
-            <span style={{ color: '#ec407a', fontWeight: 'bold', fontSize: 20 }}>●</span> <span style={{ fontWeight: 'bold' }}>Myeloma Lab Path</span>
-            <div style={{ fontSize: 16, color: '#333', marginLeft: '25px', marginTop: '5px' }}>Nurse → Blood Lab → Myeloma Doctor</div>
+            <span style={{ color: '#ec407a', fontWeight: 'bold', fontSize: 20 }}>●</span> <span style={{ fontWeight: 'bold' }}>Transplant Lab Path</span>
+            <div style={{ fontSize: 16, color: '#333', marginLeft: '25px', marginTop: '5px' }}>Nurse → Blood Lab → Transplant Doctor</div>
           </div>
           <div style={{ marginBottom: '12px' }}>
             <span style={{ color: '#42a5f5', fontWeight: 'bold', fontSize: 20 }}>●</span> <span style={{ fontWeight: 'bold' }}>Leukemia Path</span>
@@ -310,21 +310,21 @@ const edges = [
     style: { stroke: '#f8bbd0', strokeWidth: 4 },
   })),
   ...[1, 2, 3, 4, 5].map(i => ({
-    id: `myeloma1-nurse_${i}`,
+    id: `transplant1-nurse_${i}`,
     source: `nurse_${i}`,
-    target: 'myeloma_doctor',
+    target: 'transplant_doctor',
     style: { stroke: '#6a1b9a', strokeWidth: 4 },
   })),
   ...[1, 2, 3, 4, 5].map(i => ({
-    id: `myeloma2-nurse_${i}`,
+    id: `transplant2-nurse_${i}`,
     source: `nurse_${i}`,
     target: 'blood_test_lab',
     style: { stroke: '#ec407a', strokeWidth: 4 },
   })),
-  { id: 'bloodlab-queue_myeloma', source: 'blood_test_lab', target: 'queue_myeloma_doctor', style: { stroke: '#ec407a', strokeWidth: 4 } },
+  { id: 'bloodlab-queue_transplant', source: 'blood_test_lab', target: 'queue_transplant_doctor', style: { stroke: '#ec407a', strokeWidth: 4 } },
   { id: 'bloodlab-queue_leukemia_1', source: 'blood_test_lab', target: 'queue_leukemia_doctor_1', style: { stroke: '#42a5f5', strokeWidth: 4 } },
   { id: 'bloodlab-queue_leukemia_2', source: 'blood_test_lab', target: 'queue_leukemia_doctor_2', style: { stroke: '#42a5f5', strokeWidth: 4 } },
-  { id: 'queue_myeloma_doctor-myeloma_doctor', source: 'queue_myeloma_doctor', target: 'myeloma_doctor', style: { stroke: '#ec407a', strokeWidth: 4 } },
+  { id: 'queue_transplant_doctor-transplant_doctor', source: 'queue_transplant_doctor', target: 'transplant_doctor', style: { stroke: '#ec407a', strokeWidth: 4 } },
   { id: 'queue_leukemia_doctor_1-leukemia_doctor_1', source: 'queue_leukemia_doctor_1', target: 'leukemia_doctor_1', style: { stroke: '#42a5f5', strokeWidth: 4 } },
   { id: 'queue_leukemia_doctor_2-leukemia_doctor_2', source: 'queue_leukemia_doctor_2', target: 'leukemia_doctor_2', style: { stroke: '#42a5f5', strokeWidth: 4 } },
 ];
@@ -430,7 +430,6 @@ export default function App() {
         >
           <Background />
           <Controls />
-          <MiniMap />
         </ReactFlow>
       </div>
 
@@ -444,9 +443,9 @@ export default function App() {
                      selectedNode.id.startsWith('queue_nurse_') ? NurseQueueNodeStyle.background :
                      selectedNode.id === 'queue_leukemia_doctor_1' ? LeukemiaDoctorQueueNodeStyle.background :
                      selectedNode.id === 'queue_leukemia_doctor_2' ? LeukemiaDoctorQueueNodeStyle.background :
-                     selectedNode.id === 'queue_myeloma_doctor' ? MyelomaDoctorQueueNodeStyle.background :
+                     selectedNode.id === 'queue_transplant_doctor' ? TransplantDoctorQueueNodeStyle.background :
                      selectedNode.id?.includes('nurse') ? nurseNodeStyle.background :
-                     selectedNode.id?.includes('myeloma') ? myelomaNodeStyle.background :
+                     selectedNode.id?.includes('transplant') ? transplantNodeStyle.background :
                      selectedNode.id?.includes('leukemia') ? leukemiaNodeStyle.background :
                      selectedNode.id?.includes('blood_test') ? bloodLabNodeStyle.background :
                      selectedNode.id === 'arrival' ? arrivalNodeStyle.background :
@@ -459,7 +458,7 @@ export default function App() {
                  selectedNode.id.startsWith('queue_nurse_') ? NurseQueueNodeStyle.color :
                  selectedNode.id === 'queue_leukemia_doctor_1' ? LeukemiaDoctorQueueNodeStyle.color :
                  selectedNode.id === 'queue_leukemia_doctor_2' ? LeukemiaDoctorQueueNodeStyle.color :
-                 selectedNode.id === 'queue_myeloma_doctor' ? MyelomaDoctorQueueNodeStyle.color :
+                 selectedNode.id === 'queue_transplant_doctor' ? TransplantDoctorQueueNodeStyle.color :
                  selectedNode.id?.includes('nurse') || 
                  selectedNode.id?.includes('leukemia') || 
                  selectedNode.id === 'arrival' || 

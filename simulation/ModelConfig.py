@@ -1,12 +1,27 @@
-import math
+from typing import Dict, Any
 
 class ModelConfig:
-    def __init__(self):
-        self.params = self._initialize_params()
+    def __init__(self, queueing_policy: str):
+        """
+        Initialize the ModelConfig with a specific queueing policy.
 
-    def _initialize_params(self):
+        Args:
+            queueing_policy (str): The type of queueing policy to use ('single' or 'per-server')
+        """
+        self._simulation_parameters = self._initialize_simulation_parameters(queueing_policy)
+
+    def _initialize_simulation_parameters(self, queueing_policy: str) -> dict:
+        """
+        Initialize all simulation parameters.
+
+        Args:
+            queueing_policy (str): The type of queueing policy to use
+
+        Returns:
+            dict: Dictionary containing all simulation parameters
+        """
         return {
-            "queue_policy": self._initialize_queue_policy(),
+            "queue_policy": self._initialize_queue_policy(queueing_policy),
             "arrival": self._initialize_arrival_params(),
             "q_flow": self._initialize_q_flow_params(),
             "secretary": self._initialize_secretary_params(),
@@ -16,29 +31,42 @@ class ModelConfig:
             "patients": self._initialize_patient_params(),
         }
 
-    def _initialize_queue_policy(self):
+    def _initialize_queue_policy(self, queueing_policy: str) -> str:
+        """
+        Initialize the queue policy.
+
+        Args:
+            queueing_policy (str): The type of queueing policy to use
+
+        Returns:
+            str: The queueing policy type
+        """
+        return queueing_policy
+
+    def _initialize_arrival_params(self) -> dict:
+        """
+        Initialize arrival parameters.
+
+        Returns:
+            dict: Dictionary containing arrival rate parameters
+        """
         return {
-            "type": "single",  # or "per-server"
+            "constant_rate": lambda t: 100  # example, for constant rate, use lambda t: rate
         }
 
-    def _initialize_arrival_params(self):
-        return {
-            "time_varying_rate": lambda t: 6 + 4 * math.sin(t / 60)  # example, for constant rate, use lambda t: rate
-        }
-
-    def _initialize_q_flow_params(self):
+    def _initialize_q_flow_params(self) -> dict:
         return {
             "mean_service_time": 0.5,  # in minutes
             "distribution": "exponential",
         }
 
-    def _initialize_secretary_params(self):
+    def _initialize_secretary_params(self) -> dict:
         return {
             "mean_service_time": 0.75,
             "distribution": "exponential",
         }
 
-    def _initialize_nurses_params(self):
+    def _initialize_nurses_params(self) -> dict:
         return {
             "num_servers": 5,
             "mean_service_time_regular": 20.0,
@@ -46,14 +74,14 @@ class ModelConfig:
             "distribution": "exponential",
         }
 
-    def _initialize_lab_params(self):
+    def _initialize_lab_params(self) -> dict:
         return {
             "return_time_regular_test": 120.0,
-            "return_time_complex_test": 240.0,
+            "return_time_complex_test": 300.0,
             "distribution": "exponential",
         }
 
-    def _initialize_doctor_params(self):
+    def _initialize_doctor_params(self) -> Dict[str, dict]:
         return {
             "Leukemia1": {
                 "mean_service_time_other": 20.0, #Non Leukemia
@@ -69,32 +97,50 @@ class ModelConfig:
                 "distribution": "exponential",
                 "daily_capacity": 15, #Assigned up to 15 patients per day
             },
-            "Myeloma": {
-                "mean_service_time_other": 20.0, #Non Myeloma
-                "mean_service_time_regular": 15.0, #Myeloma low complexity
-                "mean_service_time_complex": 25.0, #Myeloma high complexity
+            "Transplant": {
+                "mean_service_time_other": 20.0, #Non Transplant
+                "mean_service_time_regular": 15.0, #Transplant low complexity
+                "mean_service_time_complex": 25.0, #Transplant high complexity
                 "distribution": "exponential",
                 "daily_capacity": 20, #Assigned up to 20 patients per day
             },
         }
 
-    def _initialize_patients_params(self):
+    def _initialize_patients_params(self) -> Dict[str, Any]:
         return {
             "probability_of_leukemia": 0.35,
-            "probability_of_myeloma": 0.15,
+            "probability_of_transplant": 0.15,
             "probability_of_other": 0.5,
-            "Myeloma" : {
+            "Transplant" : {
                 "probability_of_needing_a_test": 0.25, #25% of the time, the patient needs a test to be done by the nurse
                 "probability_of_regular_test": 0.75, #75% of the time a test is needed, it is a regular test
                 "probability_of_complex_test": 0.25, #25% of the time a test is needed, it is a complex test
-                "probability_that_doctor_must_get_results_from_lab": 0.2, #20% of the time the doctor must get the results from the lab before seeing the patient
+                "doctor_needs_tests": 0.2, #20% of the time the doctor must get the results from the lab before seeing the patient
             },
             "Leukemia" : {
+                "probability_of_needing_a_test": 1,
                 "probability_of_regular_test": 0.75, #75% of the time it is a regular test
                 "probability_of_complex_test": 0.25, #25% of the time it is a complex test
-                "probability_that_doctor_must_get_results_from_lab": 0.2, #20% of the time the doctor must get the results from the lab before seeing the patient
+                "doctor_needs_tests": 0.2, #20% of the time the doctor must get the results from the lab before seeing the patient
             },
         }
 
-    def get(self, section):
-        return self.params.get(section)
+    @property
+    def simulation_parameters(self) -> Dict[str, Any]:
+        """
+        Returns a dictionary containing all simulation parameters and configurations.
+
+        The dictionary includes the following key components:
+        - queue_policy: Queue management policy settings
+        - arrival: Patient arrival rate parameters
+        - q_flow: Queue flow service parameters
+        - secretary: Secretary service parameters
+        - nurses: Nurse service parameters including regular and complex test times
+        - lab: Laboratory test parameters for regular and complex tests
+        - doctors: Doctor service parameters for different specialties (Leukemia1, Leukemia2, Transplant)
+        - patients: Patient type probabilities and test requirements for different conditions
+
+        Returns:
+            dict: A dictionary containing all simulation configuration parameters
+        """
+        return self._simulation_parameters
