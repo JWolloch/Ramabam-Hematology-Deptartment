@@ -43,17 +43,6 @@ class ModelConfig:
         """
         return queueing_policy
 
-    def _initialize_arrival_params(self) -> dict:
-        """
-        Initialize arrival parameters.
-
-        Returns:
-            dict: Dictionary containing arrival rate parameters
-        """
-        return {
-            "constant_rate": lambda t: 100  # example, for constant rate, use lambda t: rate
-        }
-
     def _initialize_q_flow_params(self) -> dict:
         return {
             "mean_service_time": 0.5,  # in minutes
@@ -110,18 +99,24 @@ class ModelConfig:
         return {
             "probability_of_leukemia": 0.35,
             "probability_of_transplant": 0.15,
-            "probability_of_other": 0.5,
+            # probability of "Other" is 1 - (probability of leukemia + probability of transplant)
             "Transplant" : {
                 "probability_of_needing_a_test": 0.25, #25% of the time, the patient needs a test to be done by the nurse
                 "probability_of_regular_test": 0.75, #75% of the time a test is needed, it is a regular test
-                "probability_of_complex_test": 0.25, #25% of the time a test is needed, it is a complex test
+                # probability of complex test is 1 - probability of regular test
                 "doctor_needs_tests": 0.2, #20% of the time the doctor must get the results from the lab before seeing the patient
             },
             "Leukemia" : {
                 "probability_of_needing_a_test": 1,
                 "probability_of_regular_test": 0.75, #75% of the time it is a regular test
-                "probability_of_complex_test": 0.25, #25% of the time it is a complex test
+                # probability of complex test is 1 - probability of regular test
                 "doctor_needs_tests": 0.2, #20% of the time the doctor must get the results from the lab before seeing the patient
+            },
+            "Other": {
+                "probability_of_needing_a_test": 0.5,
+                "probability_of_regular_test": 0.75,
+                # probability of complex test is 1 - probability of regular test
+                "doctor_needs_tests": 0.2,
             },
         }
 
