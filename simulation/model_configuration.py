@@ -77,21 +77,21 @@ class ModelConfig:
                 "mean_service_time_regular": 15.0, #Leukemia low complexity
                 "mean_service_time_complex": 25.0, #Leukemia high complexity
                 "distribution": "exponential",
-                "daily_capacity": 15, #Assigned up to 15 patients per day
+                "capacity": 15,
             },
             "Leukemia2": {
                 "mean_service_time_other": 20.0, #Non Leukemia
                 "mean_service_time_regular": 15.0, #Leukemia low complexity
                 "mean_service_time_complex": 25.0, #Leukemia high complexity
                 "distribution": "exponential",
-                "daily_capacity": 15, #Assigned up to 15 patients per day
+                "capacity": 15,
             },
             "Transplant": {
                 "mean_service_time_other": 20.0, #Non Transplant
                 "mean_service_time_regular": 15.0, #Transplant low complexity
                 "mean_service_time_complex": 25.0, #Transplant high complexity
                 "distribution": "exponential",
-                "daily_capacity": 20, #Assigned up to 20 patients per day
+                "capacity": 20,
             },
         }
 
@@ -101,18 +101,21 @@ class ModelConfig:
             "probability_of_transplant": 0.15,
             # probability of "Other" is 1 - (probability of leukemia + probability of transplant)
             "Transplant" : {
+                "number_of_patients": 20,
                 "probability_of_needing_a_test": 0.25, #25% of the time, the patient needs a test to be done by the nurse
                 "probability_of_regular_test": 0.75, #75% of the time a test is needed, it is a regular test
                 # probability of complex test is 1 - probability of regular test
                 "doctor_needs_tests": 0.2, #20% of the time the doctor must get the results from the lab before seeing the patient
             },
             "Leukemia" : {
+                "number_of_patients": 30,
                 "probability_of_needing_a_test": 1,
                 "probability_of_regular_test": 0.75, #75% of the time it is a regular test
                 # probability of complex test is 1 - probability of regular test
                 "doctor_needs_tests": 0.2, #20% of the time the doctor must get the results from the lab before seeing the patient
             },
             "Other": {
+                "number_of_patients": 100,
                 "probability_of_needing_a_test": 0.5,
                 "probability_of_regular_test": 0.75,
                 # probability of complex test is 1 - probability of regular test

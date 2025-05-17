@@ -1,4 +1,4 @@
-from pythonSim import SimClasses
+from python_sim import SimClasses, SimFunctions
 from queues.queueing_policy import QueueingPolicy
 from patient import Patient, TestType
 from numpy.random import exponential
@@ -31,7 +31,6 @@ class Nurse(SimClasses.Resource):
             self.busy = True
             self.policy.record_service_start(self.name, patient)
             if self.buffer_time > 0:
-                from pythonSim import SimFunctions
                 SimFunctions.SchedulePlus(calendar, "StartNurseService", self.buffer_time, self)
             else:
                 self.start_service_immediately(calendar)
@@ -39,7 +38,6 @@ class Nurse(SimClasses.Resource):
     def start_service_immediately(self, calendar):
         """Schedule end of service based on test type."""
         service_duration = self.get_service_time(self.current_patient)
-        from pythonSim import SimFunctions
         SimFunctions.SchedulePlus(calendar, "EndNurseService", service_duration, self)
 
     def end_service(self):

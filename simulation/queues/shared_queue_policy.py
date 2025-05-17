@@ -1,10 +1,11 @@
 from queueing_policy import QueueingPolicy
-from pythonSim import SimClasses, SimFunctions
-from pythonSim.SimClasses import FIFOQueue
+from python_sim import SimClasses, SimFunctions
+from python_sim.SimClasses import FIFOQueue
 from simulation import Nurse
+from typing import Optional
 
 class SharedQueuePolicy(QueueingPolicy):
-    def __init__(self, nurses: list[Nurse], preparation_time: float):
+    def __init__(self, nurses: list[Nurse], preparation_time: Optional[float] = 4):
         super().__init__(nurses)
         self.shared_queue = FIFOQueue()
         self.preparation_time = preparation_time  # in minutes
@@ -17,7 +18,7 @@ class SharedQueuePolicy(QueueingPolicy):
         self.shared_queue.Add(patient)
 
     def get_next_patient(self, nurse_name: str = None):
-        if self.shared_queue.NumQueue() > 0:
+        if self.shared_queue.NumQueue() > 0 and self.nurses_dict[nurse_name].busy == False:
             return self.shared_queue.Remove()
         return None
 

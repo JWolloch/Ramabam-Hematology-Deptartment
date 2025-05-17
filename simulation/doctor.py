@@ -1,7 +1,7 @@
-from pythonSim import SimClasses
+from python_sim import SimClasses
 from patient import Patient, PatientType, TestType
 from numpy.random import exponential
-from pythonSim.SimFunctions import SchedulePlus
+from python_sim.SimFunctions import SchedulePlus
 
 class Doctor(SimClasses.Resource):
     def __init__(self, name: str, config: dict, doctor_config: dict):

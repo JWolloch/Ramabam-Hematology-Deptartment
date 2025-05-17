@@ -1,4 +1,4 @@
-from pythonSim.SimClasses import Entity, Clock
+from python_sim.SimClasses import Entity
 from numpy import random
 from enum import Enum
 from typing import Dict, Any
@@ -180,7 +180,7 @@ class Patient(Entity):
 
     def assign_nurse(self, nurse_name: str):
         self.assigned_nurse_name = nurse_name
-        
+
     def assign_doctor(self, doctor_name: str):
         self.assigned_doctor_name = doctor_name
 

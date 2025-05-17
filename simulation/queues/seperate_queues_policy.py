@@ -1,6 +1,6 @@
 from queueing_policy import QueueingPolicy
-from pythonSim import SimClasses
-from pythonSim.SimClasses import FIFOQueue
+from python_sim import SimClasses
+from python_sim.SimClasses import FIFOQueue
 from simulation import Nurse
 
 class SeparateQueuesPolicy(QueueingPolicy):
