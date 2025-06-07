@@ -10,7 +10,7 @@ class ModelConfig:
         """
         self._simulation_parameters = self._initialize_simulation_parameters(queueing_policy)
 
-    def _initialize_simulation_parameters(self, queueing_policy: str) -> dict:
+    def _initialize_simulation_parameters(self) -> dict:
         """
         Initialize all simulation parameters.
 
@@ -21,7 +21,6 @@ class ModelConfig:
             dict: Dictionary containing all simulation parameters
         """
         return {
-            "queue_policy": self._initialize_queue_policy(queueing_policy),
             "arrival": self._initialize_arrival_params(),
             "q_flow": self._initialize_q_flow_params(),
             "secretary": self._initialize_secretary_params(),

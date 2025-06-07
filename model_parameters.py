@@ -64,3 +64,4 @@ class ModelParameters:
     nurse_station_6_assignment_probability_other: float = 0
 
     q_flow_mean_service_time = 0.5
+    secretary_mean_service_time = 5

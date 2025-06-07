@@ -56,7 +56,7 @@ class Patient(SimClasses.Entity, ABC):
     
     def schedule_arrival(self, calendar: SimClasses.EventCalendar):
         arrival_time = self._set_arrival_time()
-        SimFunctions.SchedulePlus(calendar, f"q_flow_start_of_waiting", arrival_time, self)
+        SimFunctions.SchedulePlus(calendar, f"q_flow_station_start_of_waiting", arrival_time, self)
 
 
     def enter_q_flow_queue(self):
