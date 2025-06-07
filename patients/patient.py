@@ -9,7 +9,7 @@ class Patient(SimClasses.Entity, ABC):
     Abstract class representing a patient, inheriting from SimClasses.Entity
     '''
 
-    def __init__(self, schedule: dict[str, datetime], doctor_name: str,
+    def __init__(self, schedule: dict[str, datetime], doctor_name: str | None,
                  probability_of_complex_patient: float,
                  probability_of_visiting_nurse: float):
         super().__init__()  # Call the Entity class constructor
@@ -110,3 +110,7 @@ class Patient(SimClasses.Entity, ABC):
     @property
     def left_department(self) -> bool:
         return self._end_of_visit_time is not None
+    
+    @property
+    def doctor_name(self) -> str:
+        return self._doctor_name
