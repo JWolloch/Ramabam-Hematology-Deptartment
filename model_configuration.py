@@ -142,3 +142,27 @@ class ModelConfig:
             dict: A dictionary containing all simulation configuration parameters
         """
         return self._simulation_parameters
+    
+    @property
+    def patient_params(self) -> Dict[str, Any]:
+        return self._simulation_parameters["patients"]
+    
+    @property
+    def doctor_params(self) -> Dict[str, Any]:
+        return self._simulation_parameters["doctors"]
+    
+    @property
+    def lab_params(self) -> Dict[str, Any]:
+        return self._simulation_parameters["lab"]
+    
+    @property
+    def nurse_params(self) -> Dict[str, Any]:
+        return self._simulation_parameters["nurses"]
+    
+    @property
+    def q_flow_params(self) -> Dict[str, Any]:
+        return self._simulation_parameters["q_flow"]
+    
+    @property
+    def secretary_params(self) -> Dict[str, Any]:
+        return self._simulation_parameters["secretary"]
