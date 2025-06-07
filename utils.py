@@ -1,6 +1,6 @@
 from model_parameters import ModelParameters
-from patients.patient import Patient
 from numpy import random
+from patients.patient import Patient
 
 def assign_nurse_station(patient_type: str, parameters: ModelParameters) -> str:
     u = random.uniform(0, 1)
@@ -60,3 +60,10 @@ def assign_nurse_station(patient_type: str, parameters: ModelParameters) -> str:
             return "nurse_station_5"
         else:
             raise ValueError("Issue with Other nurse assignment probabilities")
+
+def all_left_department(patients: list[list[Patient]]) -> bool:
+    for patient_list in patients:
+        for patient in patient_list:
+            if not patient.left_department:
+                return False
+    return True
