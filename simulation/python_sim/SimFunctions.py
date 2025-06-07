@@ -6,7 +6,7 @@
 
 ###############################################################
 
-import SimClasses
+from .import SimClasses
 
 def SimFunctionsInit(calendar):
     '''

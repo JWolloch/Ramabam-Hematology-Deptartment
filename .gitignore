@@ -21,4 +21,4 @@ Thumbs.db
 .env.local
 .env.*.local
 
-_pycache_/
+__pycache__/

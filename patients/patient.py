@@ -55,7 +55,7 @@ class Patient(SimClasses.Entity, ABC):
         return dist.rvs(1)[0]
     
     def schedule_arrival(self, calendar: SimClasses.EventCalendar):
-        arrival_time = self._set_arrival_time()
+        arrival_time = self._arrival_time
         SimFunctions.SchedulePlus(calendar, f"q_flow_station_start_of_waiting", arrival_time, self)
 
 
@@ -114,3 +114,7 @@ class Patient(SimClasses.Entity, ABC):
     @property
     def doctor_name(self) -> str:
         return self._doctor_name
+    
+    @property
+    def arrival_time(self) -> float:
+        return self._arrival_time
