@@ -8,8 +8,8 @@ class TransplantPatient(Patient):
                  probability_of_visiting_nurse: float):
         super().__init__(schedule, doctor_name, probability_of_complex_patient, probability_of_visiting_nurse)
     
-    def enter_doctor_queue(self):
-        self._enter_doctor_queue_time = SimClasses.Clock
+    def enter_doctor_queue(self, clock: float):
+        self._enter_doctor_queue_time = clock
 
     def get_type(self) -> str:
         return "transplant"

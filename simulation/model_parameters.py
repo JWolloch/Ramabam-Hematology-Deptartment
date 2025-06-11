@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 @dataclass
 class ModelParameters:
+
+
     leukemia_doctor_1_mean_service_time_regular: int = 20
     leukemia_doctor_1_mean_service_time_complex: int = 40
     leukemia_doctor_1_number_of_regular_patients: int = 8
@@ -63,5 +65,5 @@ class ModelParameters:
     nurse_station_5_assignment_probability_other: float = 1/5
     nurse_station_6_assignment_probability_other: float = 0
 
-    q_flow_mean_service_time = 0.5
-    secretary_mean_service_time = 2
+    q_flow_mean_service_time = 1
+    secretary_mean_service_time = 4

@@ -7,7 +7,7 @@ class OtherPatient(Patient):
                  probability_of_visiting_nurse: float):
         super().__init__(schedule, doctor_name, probability_of_complex_patient, probability_of_visiting_nurse)
     
-    def enter_doctor_queue(self):
+    def enter_doctor_queue(self, clock: float):
         pass
 
     def get_type(self) -> str:

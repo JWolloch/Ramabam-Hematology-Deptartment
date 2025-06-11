@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from numpy import random
 from scipy.stats import truncnorm
+from tabulate import tabulate
 
 class Patient(SimClasses.Entity, ABC):
     '''
@@ -59,22 +60,38 @@ class Patient(SimClasses.Entity, ABC):
         SimFunctions.SchedulePlus(calendar, f"q_flow_station_start_of_waiting", arrival_time, self)
 
 
-    def enter_q_flow_queue(self):
-        self._enter_q_flow_queue_time = SimClasses.Clock
+    def enter_q_flow_queue(self, clock: float):
+        self._enter_q_flow_queue_time = clock
 
-    def enter_secretary_queue(self):
-        self._enter_secretary_queue_time = SimClasses.Clock
+    def enter_secretary_queue(self, clock: float):
+        self._enter_secretary_queue_time = clock
 
-    def enter_nurse_queue(self):
-        self._enter_nurse_queue_time = SimClasses.Clock
+    def enter_nurse_queue(self, clock: float):
+        self._enter_nurse_queue_time = clock
     
     @abstractmethod
-    def enter_doctor_queue(self):
+    def enter_doctor_queue(self, clock: float):
         raise NotImplementedError("Subclasses must implement this method")
     
-    def end_visit(self):
-        self._end_of_visit_time = SimClasses.Clock
+    def end_visit(self, clock: float):
+        self._end_of_visit_time = clock
 
+#########################
+##### Helper Methods#####
+#########################
+
+    def print_schedule(self):
+        headers = ["Stage", "Scheduled Time", "Actual Time"]
+        rows = [
+            ["Arrival", self._schedule.get("arrival_time"), f"{self._arrival_time:.2f}"],
+            ["Q-Flow Queue Entry", "-", self._enter_q_flow_queue_time],
+            ["Secretary Queue Entry", "-", self._enter_secretary_queue_time],
+            ["Nurse Queue Entry", "-", self._enter_nurse_queue_time if self._visits_nurse else "N/A"],
+            ["Doctor Queue Entry", "-", self._enter_doctor_queue_time],
+            ["End of Visit", "-", self._end_of_visit_time],
+        ]
+        print(f"\nPatient Schedule Summary — Doctor: {self.doctor_name}, Complexity: {self.complexity_level}, Visits Nurse: {self.visits_nurse}")
+        print(tabulate(rows, headers=headers, tablefmt="grid"))
 ######################
 ##### Properties #####
 ######################
