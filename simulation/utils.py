@@ -221,7 +221,7 @@ def secretary_station_service_end_single_queue(new_patient: Patient, model_param
         next_patient = secretary_station_queue.Remove()
         secretary_station_wait_time.Record(SimClasses.Clock - next_patient.enter_secretary_queue_time)
         SimFunctions.SchedulePlus(calendar, "secretary_station_service_start", 0, next_patient)
-        
+
 def nurse_station_1_start_of_waiting(new_patient: Patient, clock: float, nurse_station_1_queue: SimClasses.FIFOQueue, nurse_station_1: SimClasses.Resource, nurse_station_1_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     nurse_station_1_queue.Add(new_patient)
     new_patient.enter_nurse_queue(clock)
@@ -616,14 +616,14 @@ def assign_nurse_station_single_queue(patient_type: str, parameters: ModelParame
     else:
         return "general_nurse_station"
         
-def general_nurse_station_start_of_waiting(new_patient: Patient, clock: float, general_nurse_station_queue: SimClasses.FIFOQueue, general_nurse_station: SimClasses.Resource, general_nurse_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
+def general_nurse_station_start_of_waiting(new_patient: Patient, clock: float, model_parameters: ModelParametersSingleQueue, general_nurse_station_queue: SimClasses.FIFOQueue, general_nurse_station: SimClasses.Resource, general_nurse_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     general_nurse_station_queue.Add(new_patient)
     new_patient.enter_nurse_queue(clock)
     if general_nurse_station.CurrentNumBusy < general_nurse_station.NumberOfUnits:
         general_nurse_station.Seize(1)
         next_patient = general_nurse_station_queue.Remove()
         general_nurse_station_wait_time.Record(SimClasses.Clock - next_patient.enter_nurse_queue_time)
-        SimFunctions.SchedulePlus(calendar, "general_nurse_station_service_start", 0, next_patient)
+        SimFunctions.SchedulePlus(calendar, "general_nurse_station_service_start", model_parameters.general_nurse_station_preparation_time_buffer, next_patient)
 
 def general_nurse_station_service_start(new_patient: Patient, model_parameters: ModelParametersSingleQueue, calendar: SimClasses.EventCalendar):
     patient_complexity = new_patient.complexity_level

@@ -254,7 +254,7 @@ for epoch in range(simulation_configuration.num_epochs):
         
         elif NextEvent.EventType == "general_nurse_station_start_of_waiting":
             general_nurse_station_queue_length.append(general_nurse_station_queue.NumQueue())
-            utils.general_nurse_station_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, general_nurse_station_queue, general_nurse_station, general_nurse_station_wait_time, Calendar)
+            utils.general_nurse_station_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, model_parameters, general_nurse_station_queue, general_nurse_station, general_nurse_station_wait_time, Calendar)
         
         elif NextEvent.EventType == "general_nurse_station_service_start":
             utils.general_nurse_station_service_start(NextEvent.WhichObject, model_parameters, Calendar)

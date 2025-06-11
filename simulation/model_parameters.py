@@ -125,6 +125,7 @@ class ModelParametersSingleQueue:
     probability_of_visiting_nurse_other: float = 4/5 #guesstimate
 
     general_nurse_station_assignment_probability_transplant: float = 5/6
+    general_nurse_station_preparation_time_buffer: int = 3 #minutes for preparation
     transplant_nurse_station_assignment_probability_transplant: float = 1/6
 
     q_flow_mean_service_time = 1
