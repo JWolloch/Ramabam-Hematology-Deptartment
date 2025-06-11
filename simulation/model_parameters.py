@@ -44,19 +44,33 @@ class ModelParameters:
     probability_of_visiting_nurse_transplant: float = 1 #according to staff testimonies
     probability_of_visiting_nurse_other: float = 4/5 #guesstimate
 
-    nurse_station_1_assignment_probability_leukemia: float = 0.3
-    nurse_station_2_assignment_probability_leukemia: float = 0
-    nurse_station_3_assignment_probability_leukemia: float = 0
+    nurse_station_1_assignment_probability_leukemia: float = 0.2
+    nurse_station_2_assignment_probability_leukemia: float = 0.2
+    nurse_station_3_assignment_probability_leukemia: float = 0.2
     nurse_station_4_assignment_probability_leukemia: float = 0.2
-    nurse_station_5_assignment_probability_leukemia: float = 0.5
+    nurse_station_5_assignment_probability_leukemia: float = 0.2
     nurse_station_6_assignment_probability_leukemia: float = 0
 
-    nurse_station_1_assignment_probability_transplant: float = 1/7
-    nurse_station_2_assignment_probability_transplant: float = 1/7
-    nurse_station_3_assignment_probability_transplant: float = 1/14
-    nurse_station_4_assignment_probability_transplant: float = 2/7
-    nurse_station_5_assignment_probability_transplant: float = 1/7
-    nurse_station_6_assignment_probability_transplant: float = 3/14
+    nurse_station_1_assignment_probability_transplant: float = 1/6
+    nurse_station_2_assignment_probability_transplant: float = 1/6
+    nurse_station_3_assignment_probability_transplant: float = 1/6
+    nurse_station_4_assignment_probability_transplant: float = 1/6
+    nurse_station_5_assignment_probability_transplant: float = 1/6
+    nurse_station_6_assignment_probability_transplant: float = 1/6
+
+    # nurse_station_1_assignment_probability_leukemia: float = 0.3
+    # nurse_station_2_assignment_probability_leukemia: float = 0
+    # nurse_station_3_assignment_probability_leukemia: float = 0
+    # nurse_station_4_assignment_probability_leukemia: float = 0.2
+    # nurse_station_5_assignment_probability_leukemia: float = 0.5
+    # nurse_station_6_assignment_probability_leukemia: float = 0
+
+    # nurse_station_1_assignment_probability_transplant: float = 1/7
+    # nurse_station_2_assignment_probability_transplant: float = 1/7
+    # nurse_station_3_assignment_probability_transplant: float = 1/14
+    # nurse_station_4_assignment_probability_transplant: float = 2/7
+    # nurse_station_5_assignment_probability_transplant: float = 1/7
+    # nurse_station_6_assignment_probability_transplant: float = 3/14
 
     nurse_station_1_assignment_probability_other: float = 1/5
     nurse_station_2_assignment_probability_other: float = 1/5
