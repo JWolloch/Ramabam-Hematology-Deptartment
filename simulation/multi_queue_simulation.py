@@ -1,34 +1,20 @@
 import os
 
-# # Add the project root (RAMBAM-HEMATOLOGY-DEPARTMENT) to sys.path
-# project_root = os.path.abspath("..")
-# if project_root not in sys.path:
-#     sys.path.insert(0, project_root)
-
 import pandas as pd
 import numpy as np
 import scipy.stats as scs
-
 from tqdm import tqdm
-import logging
-
 
 from python_sim import SimFunctions, SimClasses
-from model_parameters import ModelParameters
+from model_parameters import ModelParametersMultiQueue
 from simulation_configuration import SimulationConfiguration
-
-from patients.patient import Patient
-from patients.leukemia_patient import LeukemiaPatient
-from patients.transplant_patient import TransplantPatient
-from patients.other_patient import OtherPatient
-
 import utils as utils
 
 
 # Initializing event calendar
 Calendar = SimClasses.EventCalendar()
 
-model_parameters = ModelParameters()
+model_parameters = ModelParametersMultiQueue()
 simulation_configuration = SimulationConfiguration()
 
 q_flow_station = SimClasses.Resource()
@@ -320,7 +306,7 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.secretary_station_service_start(NextEvent.WhichObject, model_parameters, Calendar)
         
         elif NextEvent.EventType == "secretary_station_service_end":
-            utils.secretary_station_service_end(NextEvent.WhichObject, model_parameters, secretary_station, secretary_station_queue, secretary_station_wait_time, Calendar)
+            utils.secretary_station_service_end_multi_queue(NextEvent.WhichObject, model_parameters, secretary_station, secretary_station_queue, secretary_station_wait_time, Calendar)
         
         elif NextEvent.EventType == "nurse_station_1_start_of_waiting":
             nurse_station_1_queue_length.append(nurse_station_1_queue.NumQueue())
@@ -442,8 +428,8 @@ for epoch in range(simulation_configuration.num_epochs):
                                    transplant_doctor_3_scheduled_vs_actual_time_diff, transplant_doctor_3_complex_patients_total_processing_time, transplant_doctor_3_regular_patients_total_processing_time,
                                    other_patients_total_processing_time, Calendar)
         else:
-            logging.info(NextEvent.EventType)
-            logging.error("Unknown event type")
+            print(NextEvent.EventType)
+            print("Unknown event type")
             raise ValueError(f"Unknown event type: {NextEvent.EventType}")
     #storing statistics from all DTStat objects
     q_flow_station_wait_time_avg.append(q_flow_station_wait_time.Mean())
@@ -567,9 +553,9 @@ for epoch in range(simulation_configuration.num_epochs):
     pbar_outer.update(1)
 
 pbar_outer.close()
-logging.info("Simulation completed")
+print("Simulation completed")
 
-logging.info("Saving Simulation Results")
+print("Saving Simulation Results")
 averages_df = pd.DataFrame({
     "q_flow_station_wait_time_avg": q_flow_station_wait_time_avg,
     "q_flow_station_queue_length_avg": q_flow_station_queue_length_avg,
