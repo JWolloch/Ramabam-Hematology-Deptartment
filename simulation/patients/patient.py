@@ -63,18 +63,30 @@ class Patient(SimClasses.Entity, ABC):
     def enter_q_flow_queue(self, clock: float):
         self._enter_q_flow_queue_time = clock
 
+    def q_flow_service_start(self, clock: float):
+        self._q_flow_service_start_time = clock
+
     def enter_secretary_queue(self, clock: float):
         self._enter_secretary_queue_time = clock
+
+    def secretary_service_start(self, clock: float):
+        self._secretary_service_start_time = clock
 
     def enter_nurse_queue(self, clock: float):
         self._enter_nurse_queue_time = clock
     
+    def nurse_service_start(self, clock: float):
+        self._nurse_service_start_time = clock
+
     @abstractmethod
     def enter_doctor_queue(self, clock: float):
         raise NotImplementedError("Subclasses must implement this method")
-    
+
     def end_visit(self, clock: float):
         self._end_of_visit_time = clock
+
+    def calculate_total_visit_time(self) -> float:
+        return self._end_of_visit_time - self._arrival_time
 
 #########################
 ##### Helper Methods#####
@@ -135,3 +147,4 @@ class Patient(SimClasses.Entity, ABC):
     @property
     def arrival_time(self) -> float:
         return self._arrival_time
+    

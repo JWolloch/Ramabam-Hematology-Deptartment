@@ -40,6 +40,7 @@ class CTStat:
         '''
 
         self.Area = 0.0
+        self.AreaSq = 0.0
         self.Tlast = 0.0
         self.TClear = 0.0
         self.Xlast = 0.0
@@ -60,6 +61,8 @@ class CTStat:
         '''
 
         self.Area += self.Xlast * (Clock - self.Tlast)
+        self.AreaSq += self.Xlast ** 2 * (Clock - self.Tlast)
+
         self.Tlast = Clock
         self.Xlast = X
 
@@ -82,6 +85,25 @@ class CTStat:
            mean = ((self.Area + self.Xlast * (Clock - self.Tlast)) 
             / (Clock - self.TClear))
         return mean
+    
+    def Variance(self):
+        '''
+        Returns the sample variance up through the current time but does not update any values
+
+        Output:
+            variance: float
+        '''
+
+        time_elapsed = Clock - self.TClear
+        if time_elapsed <= 0.0:
+            return 0.0
+        mean = self.Mean()
+        mean_sq = (self.AreaSq + self.Xlast ** 2 * (Clock - self.Tlast)) / time_elapsed
+
+        variance = mean_sq - mean ** 2
+
+        return variance
+
     
     def Clear(self):
         '''
@@ -416,6 +438,12 @@ class FIFOQueue:
             float, nonnegative
         '''
         return self.WIP.Mean()
+    
+    def Variance(self):
+        '''
+        Returns the variance of the number in queue up to the current time
+        '''
+        return self.WIP.Variance()
 
 class Activity:
     '''
@@ -545,6 +573,12 @@ class Resource:
         '''
 
         return self.NumBusyStat.Mean()
+    
+    def Variance(self):
+        '''
+        Returns the variance of the number of busy resources up to the current time
+        '''
+        return self.NumBusyStat.Variance()
         
     def SetUnits(self, Units):
         '''

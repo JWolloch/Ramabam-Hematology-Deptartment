@@ -11,5 +11,12 @@ class TransplantPatient(Patient):
     def enter_doctor_queue(self, clock: float):
         self._enter_doctor_queue_time = clock
 
+    def doctor_service_start(self, clock: float):
+        self._doctor_service_start_time = clock
+
     def get_type(self) -> str:
         return "transplant"
+    
+    @property
+    def scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time(self) -> float:
+        return self._doctor_service_start_time - self._schedule.get("doctor_consultation_time")
