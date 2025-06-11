@@ -1,0 +1,11 @@
+Patient Type,Multi-Queue Average Total Processing Time (min),Single-Queue Average Total Processing Time (min),Time Saved (%)
+leukemia_doctor_1_complex,185.47,180.96,2.43%
+leukemia_doctor_1_regular,151.92,148.35,2.35%
+leukemia_doctor_2_complex,127.04,115.81,8.84%
+leukemia_doctor_2_regular,111.79,98.54,11.85%
+transplant_doctor_1_complex,122.11,87.42,28.41%
+transplant_doctor_1_regular,131.94,110.31,16.39%
+transplant_doctor_2_complex,186.97,167.26,10.54%
+transplant_doctor_2_regular,153.38,135.01,11.97%
+transplant_doctor_3_complex,136.97,93.95,31.41%
+transplant_doctor_3_regular,145.77,121.83,16.42%
