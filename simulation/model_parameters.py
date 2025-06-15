@@ -7,33 +7,38 @@ class ModelParametersMultiQueue:
     leukemia_doctor_1_mean_service_time_complex: int = 40
     leukemia_doctor_1_number_of_regular_patients: int = 8
     leukemia_doctor_1_number_of_complex_patients: int = 6
+    leukemia_doctor_1_number_of_patients = 14
     leukemia_doctor_1_probability_of_complex_patient: float = leukemia_doctor_1_number_of_complex_patients/(leukemia_doctor_1_number_of_regular_patients + leukemia_doctor_1_number_of_complex_patients)
 
     leukemia_doctor_2_mean_service_time_regular: int = 20
     leukemia_doctor_2_mean_service_time_complex: int = 40
     leukemia_doctor_2_number_of_regular_patients: int = 8
     leukemia_doctor_2_number_of_complex_patients: int = 2
+    leukemia_doctor_2_number_of_patients = 10
     leukemia_doctor_2_probability_of_complex_patient: float = leukemia_doctor_2_number_of_complex_patients/(leukemia_doctor_2_number_of_regular_patients + leukemia_doctor_2_number_of_complex_patients)
 
     transplant_doctor_1_mean_service_time_regular: int = 20
     transplant_doctor_1_mean_service_time_complex: int = 40
     transplant_doctor_1_number_of_regular_patients: int = 12
     transplant_doctor_1_number_of_complex_patients: int = 1
+    transplant_doctor_1_number_of_patients = 10
     transplant_doctor_1_probability_of_complex_patient: float = transplant_doctor_1_number_of_complex_patients/(transplant_doctor_1_number_of_regular_patients + transplant_doctor_1_number_of_complex_patients)
 
     transplant_doctor_2_mean_service_time_regular: int = 20
     transplant_doctor_2_mean_service_time_complex: int = 40
     transplant_doctor_2_number_of_regular_patients: int = 13
     transplant_doctor_2_number_of_complex_patients: int = 4
+    transplant_doctor_2_number_of_patients = 17
     transplant_doctor_2_probability_of_complex_patient: float = transplant_doctor_2_number_of_complex_patients/(transplant_doctor_2_number_of_regular_patients + transplant_doctor_2_number_of_complex_patients)
 
     transplant_doctor_3_mean_service_time_regular: int = 20
     transplant_doctor_3_mean_service_time_complex: int = 40
     transplant_doctor_3_number_of_regular_patients: int = 16
     transplant_doctor_3_number_of_complex_patients: int = 1
+    transplant_doctor_3_number_of_patients = 17
     transplant_doctor_3_probability_of_complex_patient: float = transplant_doctor_3_number_of_complex_patients/(transplant_doctor_3_number_of_regular_patients + transplant_doctor_3_number_of_complex_patients)
 
-    number_of_other_patients: int = 30
+    number_of_other_patients: int = 100 - leukemia_doctor_1_number_of_patients - leukemia_doctor_2_number_of_patients - transplant_doctor_1_number_of_patients - transplant_doctor_2_number_of_patients - transplant_doctor_3_number_of_patients
     probability_of_complex_other_patient: float = 0.2 #guesstimate
 
     nurse_mean_service_time_regular: int = 20
@@ -81,6 +86,12 @@ class ModelParametersMultiQueue:
     q_flow_mean_service_time = 1
     secretary_mean_service_time = 4
 
+    probability_of_needing_blood_test_for_doctor_leukemia: float = 0.1
+    probability_of_needing_blood_test_for_doctor_transplant: float = 0.1
+    probability_of_needing_blood_test_for_doctor_other: float = 0.1
+
+    mean_time_for_blood_test_results: int = 120 
+
 @dataclass
 class ModelParametersSingleQueue:
 
@@ -88,33 +99,38 @@ class ModelParametersSingleQueue:
     leukemia_doctor_1_mean_service_time_complex: int = 40
     leukemia_doctor_1_number_of_regular_patients: int = 8
     leukemia_doctor_1_number_of_complex_patients: int = 6
+    leukemia_doctor_1_number_of_patients = 14
     leukemia_doctor_1_probability_of_complex_patient: float = leukemia_doctor_1_number_of_complex_patients/(leukemia_doctor_1_number_of_regular_patients + leukemia_doctor_1_number_of_complex_patients)
 
     leukemia_doctor_2_mean_service_time_regular: int = 20
     leukemia_doctor_2_mean_service_time_complex: int = 40
     leukemia_doctor_2_number_of_regular_patients: int = 8
     leukemia_doctor_2_number_of_complex_patients: int = 2
+    leukemia_doctor_2_number_of_patients = 10
     leukemia_doctor_2_probability_of_complex_patient: float = leukemia_doctor_2_number_of_complex_patients/(leukemia_doctor_2_number_of_regular_patients + leukemia_doctor_2_number_of_complex_patients)
 
     transplant_doctor_1_mean_service_time_regular: int = 20
     transplant_doctor_1_mean_service_time_complex: int = 40
     transplant_doctor_1_number_of_regular_patients: int = 12
     transplant_doctor_1_number_of_complex_patients: int = 1
+    transplant_doctor_1_number_of_patients = 10
     transplant_doctor_1_probability_of_complex_patient: float = transplant_doctor_1_number_of_complex_patients/(transplant_doctor_1_number_of_regular_patients + transplant_doctor_1_number_of_complex_patients)
 
     transplant_doctor_2_mean_service_time_regular: int = 20
     transplant_doctor_2_mean_service_time_complex: int = 40
     transplant_doctor_2_number_of_regular_patients: int = 13
     transplant_doctor_2_number_of_complex_patients: int = 4
+    transplant_doctor_2_number_of_patients = 17
     transplant_doctor_2_probability_of_complex_patient: float = transplant_doctor_2_number_of_complex_patients/(transplant_doctor_2_number_of_regular_patients + transplant_doctor_2_number_of_complex_patients)
 
     transplant_doctor_3_mean_service_time_regular: int = 20
     transplant_doctor_3_mean_service_time_complex: int = 40
     transplant_doctor_3_number_of_regular_patients: int = 16
     transplant_doctor_3_number_of_complex_patients: int = 1
+    transplant_doctor_3_number_of_patients = 17
     transplant_doctor_3_probability_of_complex_patient: float = transplant_doctor_3_number_of_complex_patients/(transplant_doctor_3_number_of_regular_patients + transplant_doctor_3_number_of_complex_patients)
 
-    number_of_other_patients: int = 30
+    number_of_other_patients: int = 100 - leukemia_doctor_1_number_of_patients - leukemia_doctor_2_number_of_patients - transplant_doctor_1_number_of_patients - transplant_doctor_2_number_of_patients - transplant_doctor_3_number_of_patients
     probability_of_complex_other_patient: float = 0.2 #guesstimate
 
     nurse_mean_service_time_regular: int = 20
@@ -130,3 +146,9 @@ class ModelParametersSingleQueue:
 
     q_flow_mean_service_time = 1
     secretary_mean_service_time = 4
+
+    probability_of_needing_blood_test_for_doctor_leukemia: float = 0.1
+    probability_of_needing_blood_test_for_doctor_transplant: float = 0.1
+    probability_of_needing_blood_test_for_doctor_other: float = 0.1
+
+    mean_time_for_blood_test_results: int = 120 

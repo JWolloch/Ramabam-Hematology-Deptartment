@@ -57,11 +57,11 @@ transplant_doctor_2.SetUnits(1)
 transplant_doctor_3 = SimClasses.Resource()
 transplant_doctor_3.SetUnits(1)
 
-leukemia_doctor_1_queue = SimClasses.FIFOQueue()
-leukemia_doctor_2_queue = SimClasses.FIFOQueue()
-transplant_doctor_1_queue = SimClasses.FIFOQueue()
-transplant_doctor_2_queue = SimClasses.FIFOQueue()
-transplant_doctor_3_queue = SimClasses.FIFOQueue()
+leukemia_doctor_1_queue = SimClasses.ConstrainedFIFOQueue()
+leukemia_doctor_2_queue = SimClasses.ConstrainedFIFOQueue()
+transplant_doctor_1_queue = SimClasses.ConstrainedFIFOQueue()
+transplant_doctor_2_queue = SimClasses.ConstrainedFIFOQueue()
+transplant_doctor_3_queue = SimClasses.ConstrainedFIFOQueue()
 
 q_flow_station_wait_time = SimClasses.DTStat()
 
@@ -306,6 +306,7 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.secretary_station_service_start(NextEvent.WhichObject, model_parameters, Calendar)
         
         elif NextEvent.EventType == "secretary_station_service_end":
+            
             utils.secretary_station_service_end_multi_queue(NextEvent.WhichObject, model_parameters, secretary_station, secretary_station_queue, secretary_station_wait_time, Calendar)
         
         elif NextEvent.EventType == "nurse_station_1_start_of_waiting":
@@ -316,6 +317,8 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.nurse_station_1_service_start(NextEvent.WhichObject, model_parameters, Calendar)
         
         elif NextEvent.EventType == "nurse_station_1_service_end":
+            if NextEvent.WhichObject.blood_test_needed_for_doctor:
+                utils.set_patient_blood_test_results_ready_time(NextEvent.WhichObject, Calendar, model_parameters)
             utils.nurse_station_1_service_end(NextEvent.WhichObject, nurse_station_1, nurse_station_1_queue, nurse_station_1_wait_time, Calendar)
         
         elif NextEvent.EventType == "nurse_station_2_start_of_waiting":
@@ -326,6 +329,8 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.nurse_station_2_service_start(NextEvent.WhichObject, model_parameters, Calendar)
         
         elif NextEvent.EventType == "nurse_station_2_service_end":
+            if NextEvent.WhichObject.blood_test_needed_for_doctor:
+                utils.set_patient_blood_test_results_ready_time(NextEvent.WhichObject, Calendar, model_parameters)
             utils.nurse_station_2_service_end(NextEvent.WhichObject, nurse_station_2, nurse_station_2_queue, nurse_station_2_wait_time, Calendar)
         
         elif NextEvent.EventType == "nurse_station_3_start_of_waiting":
@@ -336,6 +341,8 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.nurse_station_3_service_start(NextEvent.WhichObject, model_parameters, Calendar)
         
         elif NextEvent.EventType == "nurse_station_3_service_end":
+            if NextEvent.WhichObject.blood_test_needed_for_doctor:
+                utils.set_patient_blood_test_results_ready_time(NextEvent.WhichObject, Calendar, model_parameters)
             utils.nurse_station_3_service_end(NextEvent.WhichObject, nurse_station_3, nurse_station_3_queue, nurse_station_3_wait_time, Calendar)
         
         elif NextEvent.EventType == "nurse_station_4_start_of_waiting":
@@ -346,6 +353,8 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.nurse_station_4_service_start(NextEvent.WhichObject, model_parameters, Calendar)
         
         elif NextEvent.EventType == "nurse_station_4_service_end":
+            if NextEvent.WhichObject.blood_test_needed_for_doctor:
+                utils.set_patient_blood_test_results_ready_time(NextEvent.WhichObject, Calendar, model_parameters)
             utils.nurse_station_4_service_end(NextEvent.WhichObject, nurse_station_4, nurse_station_4_queue, nurse_station_4_wait_time, Calendar)
         
         elif NextEvent.EventType == "nurse_station_5_start_of_waiting":
@@ -356,6 +365,8 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.nurse_station_5_service_start(NextEvent.WhichObject, model_parameters, Calendar)
         
         elif NextEvent.EventType == "nurse_station_5_service_end":
+            if NextEvent.WhichObject.blood_test_needed_for_doctor:
+                utils.set_patient_blood_test_results_ready_time(NextEvent.WhichObject, Calendar, model_parameters)
             utils.nurse_station_5_service_end(NextEvent.WhichObject, nurse_station_5, nurse_station_5_queue, nurse_station_5_wait_time, Calendar)
         
         elif NextEvent.EventType == "nurse_station_6_start_of_waiting":
@@ -366,7 +377,12 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.nurse_station_6_service_start(NextEvent.WhichObject, model_parameters, Calendar)
         
         elif NextEvent.EventType == "nurse_station_6_service_end":
+            if NextEvent.WhichObject.blood_test_needed_for_doctor:
+                utils.set_patient_blood_test_results_ready_time(NextEvent.WhichObject, Calendar, model_parameters)
             utils.nurse_station_6_service_end(NextEvent.WhichObject, nurse_station_6, nurse_station_6_queue, nurse_station_6_wait_time, Calendar)
+        
+        elif NextEvent.EventType == "receive_blood_test_results":
+            NextEvent.WhichObject.receive_blood_test_results()
         
         elif NextEvent.EventType == "leukemia_doctor_1_start_of_waiting":
             leukemia_doctor_1_queue_length.append(leukemia_doctor_1_queue.NumQueue())

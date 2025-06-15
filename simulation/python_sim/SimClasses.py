@@ -234,6 +234,11 @@ class Entity():
         '''
 
         self.CreateTime = Clock
+
+class BooleanEntity(Entity):
+    def __init__(self):
+        super().__init__()
+        self.condition = False
         
 class EventNotice():
     '''
@@ -444,6 +449,27 @@ class FIFOQueue:
         Returns the variance of the number in queue up to the current time
         '''
         return self.WIP.Variance()
+
+class ConstrainedFIFOQueue(FIFOQueue):
+    def __init__(self):
+        super().__init__()
+
+    def Remove(self):
+        '''
+        Removes and returns the first entity from the queue 
+        whose `condition` is True. Updates WIP statistics.
+        If no such entity exists, returns None.
+        '''
+
+        for i, entity in enumerate(self.ThisQueue):
+            if hasattr(entity, 'condition') and entity.condition:
+                selected = self.ThisQueue.pop(i)
+                self.WIP.Record(float(self.NumQueue()))
+                return selected
+
+        return None  # No eligible entity found
+
+        
 
 class Activity:
     '''

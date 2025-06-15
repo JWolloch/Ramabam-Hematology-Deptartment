@@ -67,6 +67,19 @@ def assign_nurse_station_multi_queue(patient_type: str, parameters: ModelParamet
         else:
             raise ValueError("Issue with Other nurse assignment probabilities")
 
+def randomize_number_of_patients(number_of_patients: int) -> int:
+    u = random.uniform(0, 1)
+    if u < 0.1:
+        return number_of_patients - 2
+    elif u < 0.25:
+        return number_of_patients - 1
+    elif u < 0.75:
+        return number_of_patients
+    elif u < 0.9:
+        return number_of_patients + 1
+    else:
+        return number_of_patients + 2
+
 def all_left_department(patients: list[list[Patient]]) -> bool:
     for patient_list in patients:
         for patient in patient_list:
@@ -76,7 +89,12 @@ def all_left_department(patients: list[list[Patient]]) -> bool:
 
 def create_patient_schedule(arrival_time: int):
     return {'arrival_time': arrival_time,
-            'doctor_consultation_time': arrival_time + 120}
+            'doctor_consultation_time': arrival_time + 120,
+            'nurse_consultation_duration_current': 20,
+            'doctor_consultation_duration_current': 20,
+            'personalize_schedule': True
+            }
+
 
 def initialize_patients(patient_arrival_times: list[int],
                         doctor_name: str,
@@ -87,6 +105,7 @@ def initialize_patients(patient_arrival_times: list[int],
     patients = []
     if leukemia:
         probability_of_visiting_nurse = model_parameters.probability_of_visiting_nurse_leukemia
+        probability_of_needing_blood_test_for_doctor = model_parameters.probability_of_needing_blood_test_for_doctor_leukemia
 
         if '1' in doctor_name:
             probability_of_complex_patient = model_parameters.leukemia_doctor_1_probability_of_complex_patient
@@ -97,9 +116,12 @@ def initialize_patients(patient_arrival_times: list[int],
             patients.append(LeukemiaPatient(create_patient_schedule(arrival_time),
                                             doctor_name,
                                             probability_of_complex_patient,
-                                            probability_of_visiting_nurse))
+                                            probability_of_visiting_nurse,
+                                            probability_of_needing_blood_test_for_doctor))
     elif transplant:
         probability_of_visiting_nurse = model_parameters.probability_of_visiting_nurse_transplant
+        probability_of_needing_blood_test_for_doctor = model_parameters.probability_of_needing_blood_test_for_doctor_transplant
+
         if '1' in doctor_name:
             probability_of_complex_patient = model_parameters.transplant_doctor_1_probability_of_complex_patient
         elif '2' in doctor_name:
@@ -111,47 +133,93 @@ def initialize_patients(patient_arrival_times: list[int],
             patients.append(TransplantPatient(create_patient_schedule(arrival_time),
                                               doctor_name,
                                               probability_of_complex_patient,
-                                              probability_of_visiting_nurse))
+                                              probability_of_visiting_nurse,
+                                              probability_of_needing_blood_test_for_doctor))
     else: #other
         probability_of_visiting_nurse = model_parameters.probability_of_visiting_nurse_other
+        probability_of_needing_blood_test_for_doctor = model_parameters.probability_of_needing_blood_test_for_doctor_other
         probability_of_complex_patient = model_parameters.probability_of_complex_other_patient
 
         for arrival_time in patient_arrival_times:
             patients.append(OtherPatient(create_patient_schedule(arrival_time),
                                          doctor_name,
                                          probability_of_complex_patient,
-                                         probability_of_visiting_nurse))
+                                         probability_of_visiting_nurse,
+                                         probability_of_needing_blood_test_for_doctor))
     
     for patient in patients:
         patient.schedule_arrival(calendar)
         
     return patients
 
+def layered_patient_arrival_schedule(num_patients: int, start: int = 30, end: int = 270, interval: int = 20) -> list[int]:
+    """
+    Schedule patients:
+    1. First pass: every `interval` minutes starting from `start`
+    2. Second pass: every `2*interval` minutes from `start`
+    3. Third pass: every `2*interval` minutes from `start + interval`
+    """
+    # First pass
+    layer1 = list(range(start, end + 1, interval))
+
+    # Second pass: double-spacing from start
+    layer2 = list(range(start, end + 1, 2 * interval))
+
+    # Third pass: double-spacing from start + interval
+    layer3 = list(range(start + interval, end + 1, 2 * interval))
+    all_slots = layer1 + layer2 + layer3
+    return all_slots[:num_patients]
+
+
 def generate_patients(calendar: SimClasses.EventCalendar,parameters: ModelParametersMultiQueue | ModelParametersSingleQueue):
+
     
-    leukemia_doctor_1_number_of_patients = parameters.leukemia_doctor_1_number_of_regular_patients + parameters.leukemia_doctor_1_number_of_complex_patients
-    leukemia_doctor_1_patient_arrival_times = [60 + i*20 for i in range(leukemia_doctor_1_number_of_patients)]
-    leukemia_doctor_2_number_of_patients = parameters.leukemia_doctor_2_number_of_regular_patients + parameters.leukemia_doctor_2_number_of_complex_patients
-    leukemia_doctor_2_patient_arrival_times = [60 + i*20 for i in range(leukemia_doctor_2_number_of_patients)]
+    leukemia_doctor_1_patients = initialize_patients(
+        layered_patient_arrival_schedule(
+            randomize_number_of_patients(parameters.leukemia_doctor_1_number_of_regular_patients + parameters.leukemia_doctor_1_number_of_complex_patients)
+        ),
+        "leukemia_doctor_1", calendar, parameters
+    )
 
-    transplant_doctor_1_number_of_patients = parameters.transplant_doctor_1_number_of_regular_patients + parameters.transplant_doctor_1_number_of_complex_patients
-    transplant_doctor_1_patient_arrival_times = [60 + i*20 for i in range(transplant_doctor_1_number_of_patients)]
-    transplant_doctor_2_number_of_patients = parameters.transplant_doctor_2_number_of_regular_patients + parameters.transplant_doctor_2_number_of_complex_patients
-    transplant_doctor_2_patient_arrival_times = [60 + i*20 for i in range(transplant_doctor_2_number_of_patients)]
-    transplant_doctor_3_number_of_patients = parameters.transplant_doctor_3_number_of_regular_patients + parameters.transplant_doctor_3_number_of_complex_patients
-    transplant_doctor_3_patient_arrival_times = [60 + i*20 for i in range(transplant_doctor_3_number_of_patients)]
+    leukemia_doctor_2_patients = initialize_patients(
+        layered_patient_arrival_schedule(
+            randomize_number_of_patients(parameters.leukemia_doctor_2_number_of_regular_patients + parameters.leukemia_doctor_2_number_of_complex_patients)
+        ),
+        "leukemia_doctor_2", calendar, parameters
+    )
 
-    other_patients_arrival_times = [60 + i*10 for i in range(parameters.number_of_other_patients)]
+    transplant_doctor_1_patients = initialize_patients(
+        layered_patient_arrival_schedule(
+            randomize_number_of_patients(parameters.transplant_doctor_1_number_of_regular_patients + parameters.transplant_doctor_1_number_of_complex_patients)
+        ),
+        "transplant_doctor_1", calendar, parameters
+    )
 
-    leukemia_doctor_1_patients = initialize_patients(leukemia_doctor_1_patient_arrival_times, "leukemia_doctor_1", calendar, parameters)
-    leukemia_doctor_2_patients = initialize_patients(leukemia_doctor_2_patient_arrival_times, "leukemia_doctor_2", calendar, parameters)
-    transplant_doctor_1_patients = initialize_patients(transplant_doctor_1_patient_arrival_times, "transplant_doctor_1", calendar, parameters)
-    transplant_doctor_2_patients = initialize_patients(transplant_doctor_2_patient_arrival_times, "transplant_doctor_2", calendar, parameters)
-    transplant_doctor_3_patients = initialize_patients(transplant_doctor_3_patient_arrival_times, "transplant_doctor_3", calendar, parameters)
+    transplant_doctor_2_patients = initialize_patients(
+        layered_patient_arrival_schedule(
+            randomize_number_of_patients(parameters.transplant_doctor_2_number_of_regular_patients + parameters.transplant_doctor_2_number_of_complex_patients)
+        ),
+        "transplant_doctor_2", calendar, parameters
+    )
+
+    transplant_doctor_3_patients = initialize_patients(
+        layered_patient_arrival_schedule(
+            randomize_number_of_patients(parameters.transplant_doctor_3_number_of_regular_patients + parameters.transplant_doctor_3_number_of_complex_patients)
+        ),
+        "transplant_doctor_3", calendar, parameters
+    )
+
+    other_patients_arrival_times = layered_patient_arrival_schedule(parameters.number_of_other_patients)
     other_patients = initialize_patients(other_patients_arrival_times, "other", calendar, parameters)
-    list_of_patients = [leukemia_doctor_1_patients, leukemia_doctor_2_patients, transplant_doctor_1_patients, transplant_doctor_2_patients, transplant_doctor_3_patients, other_patients]
 
-    return list_of_patients
+    return [
+        leukemia_doctor_1_patients,
+        leukemia_doctor_2_patients,
+        transplant_doctor_1_patients,
+        transplant_doctor_2_patients,
+        transplant_doctor_3_patients,
+        other_patients,
+    ]
 
 
 def q_flow_station_start_of_waiting(new_patient: Patient, clock: float, q_flow_station_queue: SimClasses.FIFOQueue, q_flow_station: SimClasses.Resource, q_flow_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
@@ -337,13 +405,7 @@ def nurse_station_5_service_start(new_patient: Patient, model_parameters: ModelP
     SimFunctions.SchedulePlus(calendar, "nurse_station_5_service_end", service_duration, new_patient)
 
 def nurse_station_6_service_start(new_patient: Patient, model_parameters: ModelParametersMultiQueue, calendar: SimClasses.EventCalendar):
-    patient_complexity = new_patient.complexity_level
-
-    if patient_complexity == "regular":
-        mean_service_time = model_parameters.nurse_mean_service_time_regular
-    else:
-        mean_service_time = model_parameters.nurse_mean_service_time_complex
-
+    mean_service_time = model_parameters.nurse_mean_service_time_complex
     service_duration = np.random.exponential(mean_service_time)
 
     SimFunctions.SchedulePlus(calendar, "nurse_station_6_service_end", service_duration, new_patient)
@@ -463,6 +525,10 @@ def other_doctor_start_of_waiting(new_patient: Patient, clock: float, other_doct
     new_patient.enter_doctor_queue(clock)
     #other patients doctor treatment is not included in the model
     SimFunctions.SchedulePlus(calendar, "process_complete", 0, new_patient)
+
+def set_patient_blood_test_results_ready_time(new_patient: Patient, calendar: SimClasses.EventCalendar, model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue):
+    time_for_blood_test_results = np.random.exponential(model_parameters.mean_time_for_blood_test_results)
+    SimFunctions.SchedulePlus(calendar, "receive_blood_test_results", time_for_blood_test_results, new_patient)
 
 def leukemia_doctor_1_service_start(new_patient: Patient, model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue, calendar: SimClasses.EventCalendar):
     patient_complexity = new_patient.complexity_level

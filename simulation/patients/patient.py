@@ -5,20 +5,25 @@ from numpy import random
 from scipy.stats import truncnorm
 from tabulate import tabulate
 
-class Patient(SimClasses.Entity, ABC):
+class Patient(SimClasses.BooleanEntity, ABC):
     '''
     Abstract class representing a patient, inheriting from SimClasses.Entity
     '''
 
     def __init__(self, schedule: dict[str, datetime], doctor_name: str | None,
                  probability_of_complex_patient: float,
-                 probability_of_visiting_nurse: float):
-        super().__init__()  # Call the Entity class constructor
+                 probability_of_visiting_nurse: float,
+                 probability_of_needing_blood_test_for_doctor: float):
+        super().__init__()
         self._schedule = schedule
         self._doctor_name = doctor_name
         self._probability_of_complex_patient = probability_of_complex_patient
         self._complexity_level = self._determine_complexity_level()
         self._probability_of_visiting_nurse = probability_of_visiting_nurse
+        self._probability_of_needing_blood_test_for_doctor = probability_of_needing_blood_test_for_doctor
+        self.condition = False if self._probability_of_needing_blood_test_for_doctor else True
+
+        
         self._visits_nurse = self._determine_if_visits_nurse()
 
         self._enter_q_flow_queue_time = None
@@ -81,6 +86,9 @@ class Patient(SimClasses.Entity, ABC):
     @abstractmethod
     def enter_doctor_queue(self, clock: float):
         raise NotImplementedError("Subclasses must implement this method")
+    
+    def receive_blood_test_results(self):
+        self.condition = True
 
     def end_visit(self, clock: float):
         self._end_of_visit_time = clock
@@ -147,4 +155,8 @@ class Patient(SimClasses.Entity, ABC):
     @property
     def arrival_time(self) -> float:
         return self._arrival_time
+    
+    @property
+    def blood_test_needed_for_doctor(self) -> bool:
+        return not self.condition
     
