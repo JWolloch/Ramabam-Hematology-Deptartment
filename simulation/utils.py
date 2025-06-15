@@ -884,7 +884,6 @@ def generate_patient_attributes_csv(patients: list[list[Patient]], output_path: 
             'Visits Nurse': patient.visits_nurse,
             'Nurse Name': patient.nurse_name,
             'Needs Long Blood Test': patient.needs_long_blood_test,
-            'Left Department': patient.left_department,
             'Arrival Time': patient.arrival_time,
             'Q-Flow Queue Entry Time': patient.enter_q_flow_queue_time,
             'Q-Flow Service Start Time': patient.q_flow_service_start_time,

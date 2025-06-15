@@ -523,9 +523,9 @@ averages_df = pd.DataFrame({
     "transplant_nurse_station_scheduled_vs_actual_time_diff_avg": transplant_nurse_station_scheduled_vs_actual_time_diff_avg
     })
 
-os.makedirs("results_directory/multi_queue", exist_ok=True)
-averages_df.to_csv(f"results_directory/multi_queue/averages_data.csv")
-print(f"Simulation Results Saved to results_directory/multi_queue/averages_data.csv")
+os.makedirs("results_directory/single_queue", exist_ok=True)
+averages_df.to_csv(f"results_directory/single_queue/averages_data.csv")
+print(f"Simulation Results Saved to results_directory/single_queue/averages_data.csv")
 print("**********************************************************************************")
 print("Means of the simulation results:")
 print(averages_df.mean())
@@ -588,9 +588,9 @@ variances_df = pd.DataFrame({
     "transplant_nurse_station_scheduled_vs_actual_time_diff_var": transplant_nurse_station_scheduled_vs_actual_time_diff_var
 })
 
-os.makedirs("results_directory/multi_queue", exist_ok=True)
-variances_df.to_csv(f"results_directory/multi_queue/variances_data.csv")
-print("Simulation Variance Results Saved to results_directory/multi_queue/variances_data.csv")
+os.makedirs("results_directory/single_queue", exist_ok=True)
+variances_df.to_csv(f"results_directory/single_queue/variances_data.csv")
+print("Simulation Variance Results Saved to results_directory/single_queue/variances_data.csv")
 print("**********************************************************************************")
 
 # Number of epochs
