@@ -7,8 +7,10 @@ from patients.transplant_patient import TransplantPatient
 from patients.other_patient import OtherPatient
 from python_sim import SimClasses
 from python_sim import SimFunctions
+import pandas as pd
+import os
 
-def assign_nurse_station_multi_queue(patient_type: str, parameters: ModelParametersMultiQueue) -> str:
+def assign_nurse_station_multi_queue(patient_type: str, patient_complexity: str, parameters: ModelParametersMultiQueue) -> str:
     u = random.uniform(0, 1)
     if patient_type == "leukemia":
         p_1 = parameters.nurse_station_1_assignment_probability_leukemia
@@ -30,23 +32,29 @@ def assign_nurse_station_multi_queue(patient_type: str, parameters: ModelParamet
             raise ValueError("Issue with Leukemia nurse assignment probabilities")
         
     elif patient_type == "transplant":
-        p_1 = parameters.nurse_station_1_assignment_probability_transplant
-        p_2 = parameters.nurse_station_2_assignment_probability_transplant
-        p_3 = parameters.nurse_station_3_assignment_probability_transplant
-        p_4 = parameters.nurse_station_4_assignment_probability_transplant
-        p_5 = parameters.nurse_station_5_assignment_probability_transplant
-        if u < p_1:
-            return "nurse_station_1"
-        elif u < p_1 + p_2:
-            return "nurse_station_2"
-        elif u < p_1 + p_2 + p_3:
-            return "nurse_station_3"
-        elif u < p_1 + p_2 + p_3 + p_4:
-            return "nurse_station_4"
-        elif u <= p_1 + p_2 + p_3 + p_4 + p_5:
-            return "nurse_station_5"
+        if patient_complexity == "regular":
+            p_1 = parameters.nurse_station_1_assignment_probability_transplant_regular
+            p_2 = parameters.nurse_station_2_assignment_probability_transplant_regular
+            p_3 = parameters.nurse_station_3_assignment_probability_transplant_regular
+            p_4 = parameters.nurse_station_4_assignment_probability_transplant_regular
+            p_5 = parameters.nurse_station_5_assignment_probability_transplant_regular
+            if u < p_1:
+                return "nurse_station_1"
+            elif u < p_1 + p_2:
+                return "nurse_station_2"
+            elif u < p_1 + p_2 + p_3:
+                return "nurse_station_3"
+            elif u < p_1 + p_2 + p_3 + p_4:
+                return "nurse_station_4"
+            elif u <= p_1 + p_2 + p_3 + p_4 + p_5:
+                return "nurse_station_5"
+            else:
+                return "nurse_station_6"
+        
         else:
             return "nurse_station_6"
+
+
         
     elif patient_type == "other":
         p_1 = parameters.nurse_station_1_assignment_probability_other
@@ -105,7 +113,7 @@ def initialize_patients(patient_arrival_times: list[int],
     patients = []
     if leukemia:
         probability_of_visiting_nurse = model_parameters.probability_of_visiting_nurse_leukemia
-        probability_of_needing_blood_test_for_doctor = model_parameters.probability_of_needing_blood_test_for_doctor_leukemia
+        probability_of_needing_long_blood_test = model_parameters.probability_of_needing_long_blood_test
 
         if '1' in doctor_name:
             probability_of_complex_patient = model_parameters.leukemia_doctor_1_probability_of_complex_patient
@@ -117,10 +125,10 @@ def initialize_patients(patient_arrival_times: list[int],
                                             doctor_name,
                                             probability_of_complex_patient,
                                             probability_of_visiting_nurse,
-                                            probability_of_needing_blood_test_for_doctor))
+                                            probability_of_needing_long_blood_test))
     elif transplant:
         probability_of_visiting_nurse = model_parameters.probability_of_visiting_nurse_transplant
-        probability_of_needing_blood_test_for_doctor = model_parameters.probability_of_needing_blood_test_for_doctor_transplant
+        probability_of_needing_long_blood_test = model_parameters.probability_of_needing_long_blood_test
 
         if '1' in doctor_name:
             probability_of_complex_patient = model_parameters.transplant_doctor_1_probability_of_complex_patient
@@ -134,10 +142,10 @@ def initialize_patients(patient_arrival_times: list[int],
                                               doctor_name,
                                               probability_of_complex_patient,
                                               probability_of_visiting_nurse,
-                                              probability_of_needing_blood_test_for_doctor))
+                                              probability_of_needing_long_blood_test))
     else: #other
         probability_of_visiting_nurse = model_parameters.probability_of_visiting_nurse_other
-        probability_of_needing_blood_test_for_doctor = model_parameters.probability_of_needing_blood_test_for_doctor_other
+        probability_of_needing_long_blood_test = model_parameters.probability_of_needing_long_blood_test
         probability_of_complex_patient = model_parameters.probability_of_complex_other_patient
 
         for arrival_time in patient_arrival_times:
@@ -145,7 +153,7 @@ def initialize_patients(patient_arrival_times: list[int],
                                          doctor_name,
                                          probability_of_complex_patient,
                                          probability_of_visiting_nurse,
-                                         probability_of_needing_blood_test_for_doctor))
+                                         probability_of_needing_long_blood_test))
     
     for patient in patients:
         patient.schedule_arrival(calendar)
@@ -221,6 +229,31 @@ def generate_patients(calendar: SimClasses.EventCalendar,parameters: ModelParame
         other_patients,
     ]
 
+def get_nurse_number_of_patients_multi_queue(patient_list: list[Patient], nurse_name: str) -> int:
+    if nurse_name == "nurse_station_1":
+        return len([patient for patient in patient_list if patient.nurse_name == "nurse_station_1"])
+    elif nurse_name == "nurse_station_2":
+        return len([patient for patient in patient_list if patient.nurse_name == "nurse_station_2"])
+    elif nurse_name == "nurse_station_3":
+        return len([patient for patient in patient_list if patient.nurse_name == "nurse_station_3"])
+    elif nurse_name == "nurse_station_4":
+        return len([patient for patient in patient_list if patient.nurse_name == "nurse_station_4"])
+    elif nurse_name == "nurse_station_5":
+        return len([patient for patient in patient_list if patient.nurse_name == "nurse_station_5"])
+    elif nurse_name == "nurse_station_6":
+        return len([patient for patient in patient_list if patient.nurse_name == "nurse_station_6"])
+    else:
+        raise ValueError(f"Invalid nurse name: {nurse_name}")
+
+def get_nurse_number_of_patients_single_queue(patient_list: list[Patient], nurse_name: str) -> int:
+    if nurse_name == "general_nurse_station":
+        return len([patient for patient in patient_list if patient.nurse_name == "general_nurse_station"])
+    elif nurse_name == "transplant_nurse_station":
+        return len([patient for patient in patient_list if patient.nurse_name == "transplant_nurse_station"])
+    else:
+        raise ValueError(f"Invalid nurse name: {nurse_name}")
+
+
 
 def q_flow_station_start_of_waiting(new_patient: Patient, clock: float, q_flow_station_queue: SimClasses.FIFOQueue, q_flow_station: SimClasses.Resource, q_flow_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     q_flow_station_queue.Add(new_patient)
@@ -233,6 +266,7 @@ def q_flow_station_start_of_waiting(new_patient: Patient, clock: float, q_flow_s
 
 def q_flow_station_service_start(new_patient : Patient, model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue, calendar: SimClasses.EventCalendar):
     q_flow_service_duration = np.random.exponential(model_parameters.q_flow_mean_service_time)
+    new_patient.q_flow_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "q_flow_station_service_end", q_flow_service_duration, new_patient)
 
 def q_flow_station_service_end(new_patient: Patient, q_flow_station: SimClasses.Resource, q_flow_station_queue: SimClasses.FIFOQueue, q_flow_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
@@ -256,13 +290,13 @@ def secretary_station_start_of_waiting(new_patient: Patient, clock: float, secre
 
 def secretary_station_service_start(new_patient: Patient, model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue, calendar: SimClasses.EventCalendar):
     secretary_station_service_duration = np.random.exponential(model_parameters.secretary_mean_service_time)
+    new_patient.secretary_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "secretary_station_service_end", secretary_station_service_duration, new_patient)
 
 def secretary_station_service_end_multi_queue(new_patient: Patient, model_parameters: ModelParametersMultiQueue, secretary_station: SimClasses.Resource, secretary_station_queue: SimClasses.FIFOQueue, secretary_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
-    patient_type = new_patient.get_type()
     has_nurse_appointment = new_patient.visits_nurse
     if has_nurse_appointment:
-        nurse_station = assign_nurse_station_multi_queue(patient_type, model_parameters)
+        nurse_station = new_patient.nurse_name
         SimFunctions.SchedulePlus(calendar, f'{nurse_station}_start_of_waiting', 0, new_patient)
     else:
         SimFunctions.SchedulePlus(calendar, f'{new_patient.doctor_name}_start_of_waiting', 0, new_patient)
@@ -276,9 +310,10 @@ def secretary_station_service_end_multi_queue(new_patient: Patient, model_parame
 
 def secretary_station_service_end_single_queue(new_patient: Patient, model_parameters: ModelParametersSingleQueue, secretary_station: SimClasses.Resource, secretary_station_queue: SimClasses.FIFOQueue, secretary_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     patient_type = new_patient.get_type()
+    patient_complexity = new_patient.complexity_level
     has_nurse_appointment = new_patient.visits_nurse
     if has_nurse_appointment:
-        nurse_station = assign_nurse_station_single_queue(patient_type, model_parameters)
+        nurse_station = assign_nurse_station_single_queue(patient_type, patient_complexity, model_parameters)
         SimFunctions.SchedulePlus(calendar, f'{nurse_station}_start_of_waiting', 0, new_patient)
     else:
         SimFunctions.SchedulePlus(calendar, f'{new_patient.doctor_name}_start_of_waiting', 0, new_patient)
@@ -353,6 +388,7 @@ def nurse_station_1_service_start(new_patient: Patient, model_parameters: ModelP
         mean_service_time = model_parameters.nurse_mean_service_time_complex
 
     service_duration = np.random.exponential(mean_service_time)
+    new_patient.nurse_service_start(SimClasses.Clock)
 
     SimFunctions.SchedulePlus(calendar, "nurse_station_1_service_end", service_duration, new_patient)
 
@@ -365,7 +401,7 @@ def nurse_station_2_service_start(new_patient: Patient, model_parameters: ModelP
         mean_service_time = model_parameters.nurse_mean_service_time_complex
 
     service_duration = np.random.exponential(mean_service_time)
-
+    new_patient.nurse_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "nurse_station_2_service_end", service_duration, new_patient)
 
 def nurse_station_3_service_start(new_patient: Patient, model_parameters: ModelParametersMultiQueue, calendar: SimClasses.EventCalendar):
@@ -377,7 +413,7 @@ def nurse_station_3_service_start(new_patient: Patient, model_parameters: ModelP
         mean_service_time = model_parameters.nurse_mean_service_time_complex
 
     service_duration = np.random.exponential(mean_service_time)
-
+    new_patient.nurse_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "nurse_station_3_service_end", service_duration, new_patient)
 
 def nurse_station_4_service_start(new_patient: Patient, model_parameters: ModelParametersMultiQueue, calendar: SimClasses.EventCalendar):
@@ -389,7 +425,7 @@ def nurse_station_4_service_start(new_patient: Patient, model_parameters: ModelP
         mean_service_time = model_parameters.nurse_mean_service_time_complex
 
     service_duration = np.random.exponential(mean_service_time)
-
+    new_patient.nurse_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "nurse_station_4_service_end", service_duration, new_patient)
 
 def nurse_station_5_service_start(new_patient: Patient, model_parameters: ModelParametersMultiQueue, calendar: SimClasses.EventCalendar):
@@ -401,13 +437,13 @@ def nurse_station_5_service_start(new_patient: Patient, model_parameters: ModelP
         mean_service_time = model_parameters.nurse_mean_service_time_complex
 
     service_duration = np.random.exponential(mean_service_time)
-
+    new_patient.nurse_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "nurse_station_5_service_end", service_duration, new_patient)
 
 def nurse_station_6_service_start(new_patient: Patient, model_parameters: ModelParametersMultiQueue, calendar: SimClasses.EventCalendar):
     mean_service_time = model_parameters.nurse_mean_service_time_complex
     service_duration = np.random.exponential(mean_service_time)
-
+    new_patient.nurse_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "nurse_station_6_service_end", service_duration, new_patient)
 
 def nurse_station_1_service_end(new_patient: Patient, nurse_station_1: SimClasses.Resource, nurse_station_1_queue: SimClasses.FIFOQueue, nurse_station_1_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
@@ -480,46 +516,51 @@ def leukemia_doctor_1_start_of_waiting(new_patient: Patient, clock: float, leuke
     leukemia_doctor_1_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
     if leukemia_doctor_1.CurrentNumBusy < leukemia_doctor_1.NumberOfUnits:
-        leukemia_doctor_1.Seize(1)
         next_patient = leukemia_doctor_1_queue.Remove()
-        leukemia_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "leukemia_doctor_1_service_start", 0, next_patient)
+        if next_patient is not None:
+            leukemia_doctor_1.Seize(1)
+            leukemia_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "leukemia_doctor_1_service_start", 0, next_patient)
 
 def leukemia_doctor_2_start_of_waiting(new_patient: Patient, clock: float, leukemia_doctor_2_queue: SimClasses.FIFOQueue, leukemia_doctor_2: SimClasses.Resource, leukemia_doctor_2_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     leukemia_doctor_2_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
     if leukemia_doctor_2.CurrentNumBusy < leukemia_doctor_2.NumberOfUnits:
-        leukemia_doctor_2.Seize(1)
         next_patient = leukemia_doctor_2_queue.Remove()
-        leukemia_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "leukemia_doctor_2_service_start", 0, next_patient)
+        if next_patient is not None:
+            leukemia_doctor_2.Seize(1)
+            leukemia_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "leukemia_doctor_2_service_start", 0, next_patient)
 
 def transplant_doctor_1_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_1_queue: SimClasses.FIFOQueue, transplant_doctor_1: SimClasses.Resource, transplant_doctor_1_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     transplant_doctor_1_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
     if transplant_doctor_1.CurrentNumBusy < transplant_doctor_1.NumberOfUnits:
-        transplant_doctor_1.Seize(1)
         next_patient = transplant_doctor_1_queue.Remove()
-        transplant_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "transplant_doctor_1_service_start", 0, next_patient)
+        if next_patient is not None:
+            transplant_doctor_1.Seize(1)
+            transplant_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "transplant_doctor_1_service_start", 0, next_patient)
 
 def transplant_doctor_2_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_2_queue: SimClasses.FIFOQueue, transplant_doctor_2: SimClasses.Resource, transplant_doctor_2_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     transplant_doctor_2_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
     if transplant_doctor_2.CurrentNumBusy < transplant_doctor_2.NumberOfUnits:
-        transplant_doctor_2.Seize(1)
         next_patient = transplant_doctor_2_queue.Remove()
-        transplant_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "transplant_doctor_2_service_start", 0, next_patient)
+        if next_patient is not None:
+            transplant_doctor_2.Seize(1)
+            transplant_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "transplant_doctor_2_service_start", 0, next_patient)
 
 def transplant_doctor_3_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_3_queue: SimClasses.FIFOQueue, transplant_doctor_3: SimClasses.Resource, transplant_doctor_3_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     transplant_doctor_3_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
     if transplant_doctor_3.CurrentNumBusy < transplant_doctor_3.NumberOfUnits:
-        transplant_doctor_3.Seize(1)
         next_patient = transplant_doctor_3_queue.Remove()
-        transplant_doctor_3_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "transplant_doctor_3_service_start", 0, next_patient)
+        if next_patient is not None:
+            transplant_doctor_3.Seize(1)
+            transplant_doctor_3_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "transplant_doctor_3_service_start", 0, next_patient)
 
 def other_doctor_start_of_waiting(new_patient: Patient, clock: float, other_doctor_queue: SimClasses.FIFOQueue, other_doctor: SimClasses.Resource, other_doctor_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     new_patient.enter_doctor_queue(clock)
@@ -527,8 +568,14 @@ def other_doctor_start_of_waiting(new_patient: Patient, clock: float, other_doct
     SimFunctions.SchedulePlus(calendar, "process_complete", 0, new_patient)
 
 def set_patient_blood_test_results_ready_time(new_patient: Patient, calendar: SimClasses.EventCalendar, model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue):
-    time_for_blood_test_results = np.random.exponential(model_parameters.mean_time_for_blood_test_results)
+    needs_long_blood_test = new_patient.needs_long_blood_test
+    if needs_long_blood_test:
+        time_for_blood_test_results = np.random.exponential(model_parameters.mean_time_for_long_blood_test)
+    else:
+        time_for_blood_test_results = np.random.exponential(model_parameters.mean_time_for_regular_blood_test)
     SimFunctions.SchedulePlus(calendar, "receive_blood_test_results", time_for_blood_test_results, new_patient)
+    # Schedule a check of the doctor's queue when blood test results are ready
+    SimFunctions.SchedulePlus(calendar, f"{new_patient.doctor_name}_start_of_waiting", time_for_blood_test_results, new_patient)
 
 def leukemia_doctor_1_service_start(new_patient: Patient, model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue, calendar: SimClasses.EventCalendar):
     patient_complexity = new_patient.complexity_level
@@ -585,52 +632,58 @@ def leukemia_doctor_1_service_end(new_patient: Patient, leukemia_doctor_1: SimCl
     SimFunctions.SchedulePlus(calendar, "process_complete", 0, new_patient)
 
     if leukemia_doctor_1.CurrentNumBusy < leukemia_doctor_1.NumberOfUnits and leukemia_doctor_1_queue.NumQueue() > 0:
-        leukemia_doctor_1.Seize(1)
         next_patient = leukemia_doctor_1_queue.Remove()
-        leukemia_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "leukemia_doctor_1_service_start", 0, next_patient)
+        if next_patient is not None:
+            leukemia_doctor_1.Seize(1)
+            leukemia_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "leukemia_doctor_1_service_start", 0, next_patient)
 
 def leukemia_doctor_2_service_end(new_patient: Patient, leukemia_doctor_2: SimClasses.Resource, leukemia_doctor_2_queue: SimClasses.FIFOQueue, leukemia_doctor_2_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     leukemia_doctor_2.Free(1)
     SimFunctions.SchedulePlus(calendar, "process_complete", 0, new_patient)
 
     if leukemia_doctor_2.CurrentNumBusy < leukemia_doctor_2.NumberOfUnits and leukemia_doctor_2_queue.NumQueue() > 0:
-        leukemia_doctor_2.Seize(1)
         next_patient = leukemia_doctor_2_queue.Remove()
-        leukemia_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "leukemia_doctor_2_service_start", 0, next_patient)
+        if next_patient is not None:
+            leukemia_doctor_2.Seize(1)
+            leukemia_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "leukemia_doctor_2_service_start", 0, next_patient)
 
 def transplant_doctor_1_service_end(new_patient: Patient, transplant_doctor_1: SimClasses.Resource, transplant_doctor_1_queue: SimClasses.FIFOQueue, transplant_doctor_1_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     transplant_doctor_1.Free(1)
     SimFunctions.SchedulePlus(calendar, "process_complete", 0, new_patient)
 
     if transplant_doctor_1.CurrentNumBusy < transplant_doctor_1.NumberOfUnits and transplant_doctor_1_queue.NumQueue() > 0:
-        transplant_doctor_1.Seize(1)
         next_patient = transplant_doctor_1_queue.Remove()
-        transplant_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "transplant_doctor_1_service_start", 0, next_patient)
+        if next_patient is not None:
+            transplant_doctor_1.Seize(1)
+            transplant_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "transplant_doctor_1_service_start", 0, next_patient)
 
 def transplant_doctor_2_service_end(new_patient: Patient, transplant_doctor_2: SimClasses.Resource, transplant_doctor_2_queue: SimClasses.FIFOQueue, transplant_doctor_2_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     transplant_doctor_2.Free(1)
     SimFunctions.SchedulePlus(calendar, "process_complete", 0, new_patient)
 
     if transplant_doctor_2.CurrentNumBusy < transplant_doctor_2.NumberOfUnits and transplant_doctor_2_queue.NumQueue() > 0:
-        transplant_doctor_2.Seize(1)
         next_patient = transplant_doctor_2_queue.Remove()
-        transplant_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "transplant_doctor_2_service_start", 0, next_patient)
+        if next_patient is not None:
+            transplant_doctor_2.Seize(1)
+            transplant_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "transplant_doctor_2_service_start", 0, next_patient)
 
 def transplant_doctor_3_service_end(new_patient: Patient, transplant_doctor_3: SimClasses.Resource, transplant_doctor_3_queue: SimClasses.FIFOQueue, transplant_doctor_3_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     transplant_doctor_3.Free(1)
     SimFunctions.SchedulePlus(calendar, "process_complete", 0, new_patient)
 
     if transplant_doctor_3.CurrentNumBusy < transplant_doctor_3.NumberOfUnits and transplant_doctor_3_queue.NumQueue() > 0:
-        transplant_doctor_3.Seize(1)
         next_patient = transplant_doctor_3_queue.Remove()
-        transplant_doctor_3_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-        SimFunctions.SchedulePlus(calendar, "transplant_doctor_3_service_start", 0, next_patient)
+        if next_patient is not None:
+            transplant_doctor_3.Seize(1)
+            transplant_doctor_3_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, "transplant_doctor_3_service_start", 0, next_patient)
 
-def process_complete(new_patient: Patient, clock: float, leukemia_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_3_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_regular_patients_total_processing_time: SimClasses.DTStat, other_patients_total_processing_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
+def process_complete(new_patient: Patient, clock: float, nurse_station_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_3_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_4_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_5_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_6_scheduled_vs_actual_time_diff: SimClasses.DTStat,
+                      leukemia_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_3_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_regular_patients_total_processing_time: SimClasses.DTStat, other_patients_total_processing_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     if new_patient.doctor_name == "leukemia_doctor_1":
         leukemia_doctor_1_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
         if new_patient.complexity_level == "complex":
@@ -666,19 +719,80 @@ def process_complete(new_patient: Patient, clock: float, leukemia_doctor_1_sched
     else:
         raise ValueError(f"Invalid doctor name: {new_patient.doctor_name}")
     
+    if new_patient.nurse_name == "nurse_1":
+        nurse_station_1_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
+    elif new_patient.nurse_name == "nurse_2":
+        nurse_station_2_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
+    elif new_patient.nurse_name == "nurse_3":
+        nurse_station_3_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
+    elif new_patient.nurse_name == "nurse_4":
+        nurse_station_4_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
+    elif new_patient.nurse_name == "nurse_5":
+        nurse_station_5_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
+    elif new_patient.nurse_name == "nurse_6":
+        nurse_station_6_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
+    
     new_patient.end_visit(clock)
 
-def assign_nurse_station_single_queue(patient_type: str, parameters: ModelParametersSingleQueue) -> str:
+def process_complete_single_queue(new_patient: Patient, clock: float, general_nurse_station_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_nurse_station_scheduled_vs_actual_time_diff: SimClasses.DTStat,
+                      leukemia_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_3_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_regular_patients_total_processing_time: SimClasses.DTStat, other_patients_total_processing_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
+    if new_patient.doctor_name == "leukemia_doctor_1":
+        leukemia_doctor_1_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        if new_patient.complexity_level == "complex":
+            leukemia_doctor_1_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+        else:
+            leukemia_doctor_1_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+    elif new_patient.doctor_name == "leukemia_doctor_2":
+        leukemia_doctor_2_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        if new_patient.complexity_level == "complex":
+            leukemia_doctor_2_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+        else:
+            leukemia_doctor_2_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+    elif new_patient.doctor_name == "transplant_doctor_1":
+        transplant_doctor_1_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        if new_patient.complexity_level == "complex":
+            transplant_doctor_1_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+        else:
+            transplant_doctor_1_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+    elif new_patient.doctor_name == "transplant_doctor_2":
+        transplant_doctor_2_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        if new_patient.complexity_level == "complex":
+            transplant_doctor_2_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+        else:
+            transplant_doctor_2_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+    elif new_patient.doctor_name == "transplant_doctor_3":
+        transplant_doctor_3_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        if new_patient.complexity_level == "complex":
+            transplant_doctor_3_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+        else:
+            transplant_doctor_3_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+    elif new_patient.doctor_name == "other":
+        other_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
+    else:
+        raise ValueError(f"Invalid doctor name: {new_patient.doctor_name}")
+    
+    if new_patient.nurse_name == "general_nurse_station":
+        general_nurse_station_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
+    elif new_patient.nurse_name == "transplant_nurse_station":
+        transplant_nurse_station_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
+    
+    new_patient.end_visit(clock)
+
+def assign_nurse_station_single_queue(patient_type: str, patient_complexity: str, parameters: ModelParametersSingleQueue) -> str:
     u = random.uniform(0, 1)
-    if patient_type == "transplant":
-        p_1 = parameters.general_nurse_station_assignment_probability_transplant
-        p_2 = parameters.transplant_nurse_station_assignment_probability_transplant
+    if patient_type == "transplant" and patient_complexity == "regular":
+        p_1 = parameters.general_nurse_station_assignment_probability_transplant_regular
+        p_2 = parameters.transplant_nurse_station_assignment_probability_transplant_regular
         if u < p_1:
             return "general_nurse_station"
         elif u <= p_1 + p_2:
             return "transplant_nurse_station"
         else:
             raise ValueError("Issue with Transplant nurse assignment probabilities")
+        
+    elif patient_type == "transplant":
+        return "transplant_nurse_station"
+
     else:
         return "general_nurse_station"
         
@@ -700,7 +814,7 @@ def general_nurse_station_service_start(new_patient: Patient, model_parameters: 
         mean_service_time = model_parameters.nurse_mean_service_time_complex
 
     service_duration = np.random.exponential(mean_service_time)
-
+    new_patient.nurse_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "general_nurse_station_service_end", service_duration, new_patient)
 
 def general_nurse_station_service_end(new_patient: Patient, general_nurse_station: SimClasses.Resource, general_nurse_station_queue: SimClasses.FIFOQueue, general_nurse_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
@@ -732,7 +846,7 @@ def transplant_nurse_station_service_start(new_patient: Patient, model_parameter
         mean_service_time = model_parameters.nurse_mean_service_time_complex
 
     service_duration = np.random.exponential(mean_service_time)
-
+    new_patient.nurse_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "transplant_nurse_station_service_end", service_duration, new_patient)
 
 def transplant_nurse_station_service_end(new_patient: Patient, transplant_nurse_station: SimClasses.Resource, transplant_nurse_station_queue: SimClasses.FIFOQueue, transplant_nurse_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
@@ -745,3 +859,52 @@ def transplant_nurse_station_service_end(new_patient: Patient, transplant_nurse_
         next_patient = transplant_nurse_station_queue.Remove()
         transplant_nurse_station_wait_time.Record(SimClasses.Clock - next_patient.enter_nurse_queue_time)
         SimFunctions.SchedulePlus(calendar, "transplant_nurse_station_service_start", 0, next_patient)
+
+def generate_patient_attributes_csv(patients: list[list[Patient]], output_path: str = "results_directory/patient_attributes.csv"):
+    """
+    Generate a CSV file containing all attributes of patients from the simulation.
+    
+    Args:
+        patients: List of lists containing Patient objects
+        output_path: Path where the CSV file should be saved
+    """
+    # Flatten the list of lists into a single list of patients
+    all_patients = [patient for patient_list in patients for patient in patient_list]
+    
+    # Create a list of dictionaries containing patient attributes
+    patient_data = []
+    for patient in all_patients:
+        doctor_scheduled_vs_actual_time_diff = None
+        if patient.get_type() != "other":
+            doctor_scheduled_vs_actual_time_diff = patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        patient_dict = {
+            'Patient Type': patient.get_type(),
+            'Doctor Name': patient.doctor_name,
+            'Complexity Level': patient.complexity_level,
+            'Visits Nurse': patient.visits_nurse,
+            'Nurse Name': patient.nurse_name,
+            'Needs Long Blood Test': patient.needs_long_blood_test,
+            'Left Department': patient.left_department,
+            'Arrival Time': patient.arrival_time,
+            'Q-Flow Queue Entry Time': patient.enter_q_flow_queue_time,
+            'Q-Flow Service Start Time': patient.q_flow_service_start_time,
+            'Secretary Queue Entry Time': patient.enter_secretary_queue_time,
+            'Secretary Service Start Time': patient.secretary_service_start_time,
+            'Nurse Queue Entry Time': patient.enter_nurse_queue_time,
+            'Nurse Service Start Time': patient.nurse_service_start_time,
+            'Doctor Queue Entry Time': patient.enter_doctor_queue_time,
+            'End of Visit Time': patient.end_of_visit_time,
+            'Scheduled vs Actual Nurse Time Diff': None if not patient.visits_nurse else patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time,
+            'Scheduled vs Actual Doctor Time Diff': doctor_scheduled_vs_actual_time_diff
+        }
+        patient_data.append(patient_dict)
+    
+    # Create DataFrame
+    df = pd.DataFrame(patient_data)
+    
+    # Create directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    # Save to CSV
+    df.to_csv(output_path, index=False)
+    print(f"Patient attributes saved to {output_path}")

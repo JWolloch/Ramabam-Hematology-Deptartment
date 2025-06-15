@@ -13,17 +13,18 @@ class Patient(SimClasses.BooleanEntity, ABC):
     def __init__(self, schedule: dict[str, datetime], doctor_name: str | None,
                  probability_of_complex_patient: float,
                  probability_of_visiting_nurse: float,
-                 probability_of_needing_blood_test_for_doctor: float):
+                 probability_of_needing_long_blood_test: float):
         super().__init__()
         self._schedule = schedule
         self._doctor_name = doctor_name
         self._probability_of_complex_patient = probability_of_complex_patient
-        self._complexity_level = self._determine_complexity_level()
         self._probability_of_visiting_nurse = probability_of_visiting_nurse
-        self._probability_of_needing_blood_test_for_doctor = probability_of_needing_blood_test_for_doctor
-        self.condition = False if self._probability_of_needing_blood_test_for_doctor else True
+        self._probability_of_needing_long_blood_test = probability_of_needing_long_blood_test
+        self._complexity_level = self._determine_complexity_level()
+        self._needs_long_blood_test = self._determine_if_needs_long_blood_test()
 
-        
+        self.condition = False        
+        self._nurse_name = None
         self._visits_nurse = self._determine_if_visits_nurse()
 
         self._enter_q_flow_queue_time = None
@@ -31,6 +32,8 @@ class Patient(SimClasses.BooleanEntity, ABC):
         self._enter_nurse_queue_time = None
         self._enter_doctor_queue_time = None
         self._end_of_visit_time = None
+        self._nurse_service_start_time = None
+        self._doctor_service_start_time = None
         self._arrival_time = self._set_arrival_time()
     
     def _determine_if_visits_nurse(self) -> bool:
@@ -46,6 +49,13 @@ class Patient(SimClasses.BooleanEntity, ABC):
             return "complex"
         else:
             return "regular"
+        
+    def _determine_if_needs_long_blood_test(self) -> bool:
+        u = random.uniform(0, 1)
+        if u < self._probability_of_needing_long_blood_test:
+            return True
+        else:
+            return False
     
     @abstractmethod
     def get_type(self) -> str:
@@ -76,6 +86,10 @@ class Patient(SimClasses.BooleanEntity, ABC):
 
     def secretary_service_start(self, clock: float):
         self._secretary_service_start_time = clock
+    
+    def set_nurse_name(self, nurse_name: str):
+        if self._visits_nurse:
+            self._nurse_name = nurse_name
 
     def enter_nurse_queue(self, clock: float):
         self._enter_nurse_queue_time = clock
@@ -119,18 +133,36 @@ class Patient(SimClasses.BooleanEntity, ABC):
     @property
     def enter_q_flow_queue_time(self) -> float | None:
         return self._enter_q_flow_queue_time
+    
+    @property
+    def q_flow_service_start_time(self) -> float | None:
+        return self._q_flow_service_start_time
 
     @property
     def enter_secretary_queue_time(self) -> float | None:
         return self._enter_secretary_queue_time
 
     @property
+    def secretary_service_start_time(self) -> float | None:
+        return self._secretary_service_start_time
+    
+    @property
     def enter_nurse_queue_time(self) -> float | None:
-        return self._enter_nurse_queue_time
+        return self._enter_nurse_queue_time if self._visits_nurse else None
+    
+    @property
+    def nurse_service_start_time(self) -> float | None:
+        return self._nurse_service_start_time if self._visits_nurse else None
+
+    @property
+    def nurse_name(self) -> str:
+        if self._nurse_name is None:
+            return "N/A"
+        return self._nurse_name
 
     @property
     def enter_doctor_queue_time(self) -> float | None:
-        return self._enter_doctor_queue_time
+        return self._enter_doctor_queue_time 
 
     @property
     def end_of_visit_time(self) -> float | None:
@@ -157,6 +189,16 @@ class Patient(SimClasses.BooleanEntity, ABC):
         return self._arrival_time
     
     @property
-    def blood_test_needed_for_doctor(self) -> bool:
-        return not self.condition
-    
+    def needs_long_blood_test(self) -> bool:
+        return self._needs_long_blood_test
+
+    @property
+    def scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time(self) -> float:
+        if self._visits_nurse:
+            return self._nurse_service_start_time - self._schedule.get("arrival_time")
+        else:
+            return None
+
+    @property
+    def nurse_service_start_time(self) -> float | None:
+        return self._nurse_service_start_time

@@ -3,10 +3,11 @@ from datetime import datetime
 from python_sim import SimClasses
 
 class TransplantPatient(Patient):
-    def __init__(self, schedule: dict[str, datetime], doctor_name: str,
+    def __init__(self, schedule: dict[str, datetime], doctor_name: str | None,
                  probability_of_complex_patient: float,
-                 probability_of_visiting_nurse: float):
-        super().__init__(schedule, doctor_name, probability_of_complex_patient, probability_of_visiting_nurse)
+                 probability_of_visiting_nurse: float,
+                 probability_of_needing_long_blood_test: float):
+        super().__init__(schedule, doctor_name, probability_of_complex_patient, probability_of_visiting_nurse, probability_of_needing_long_blood_test)
     
     def enter_doctor_queue(self, clock: float):
         self._enter_doctor_queue_time = clock

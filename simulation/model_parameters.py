@@ -55,26 +55,12 @@ class ModelParametersMultiQueue:
     nurse_station_5_assignment_probability_leukemia: float = 0.2
     nurse_station_6_assignment_probability_leukemia: float = 0
 
-    nurse_station_1_assignment_probability_transplant: float = 1/6
-    nurse_station_2_assignment_probability_transplant: float = 1/6
-    nurse_station_3_assignment_probability_transplant: float = 1/6
-    nurse_station_4_assignment_probability_transplant: float = 1/6
-    nurse_station_5_assignment_probability_transplant: float = 1/6
-    nurse_station_6_assignment_probability_transplant: float = 1/6
-
-    # nurse_station_1_assignment_probability_leukemia: float = 0.3
-    # nurse_station_2_assignment_probability_leukemia: float = 0
-    # nurse_station_3_assignment_probability_leukemia: float = 0
-    # nurse_station_4_assignment_probability_leukemia: float = 0.2
-    # nurse_station_5_assignment_probability_leukemia: float = 0.5
-    # nurse_station_6_assignment_probability_leukemia: float = 0
-
-    # nurse_station_1_assignment_probability_transplant: float = 1/7
-    # nurse_station_2_assignment_probability_transplant: float = 1/7
-    # nurse_station_3_assignment_probability_transplant: float = 1/14
-    # nurse_station_4_assignment_probability_transplant: float = 2/7
-    # nurse_station_5_assignment_probability_transplant: float = 1/7
-    # nurse_station_6_assignment_probability_transplant: float = 3/14
+    nurse_station_1_assignment_probability_transplant_regular: float = 2/11
+    nurse_station_2_assignment_probability_transplant_regular: float = 2/11
+    nurse_station_3_assignment_probability_transplant_regular: float = 2/11
+    nurse_station_4_assignment_probability_transplant_regular: float = 2/11
+    nurse_station_5_assignment_probability_transplant_regular: float = 2/11
+    nurse_station_6_assignment_probability_transplant_regular: float = 1/11
 
     nurse_station_1_assignment_probability_other: float = 1/5
     nurse_station_2_assignment_probability_other: float = 1/5
@@ -86,11 +72,10 @@ class ModelParametersMultiQueue:
     q_flow_mean_service_time = 1
     secretary_mean_service_time = 4
 
-    probability_of_needing_blood_test_for_doctor_leukemia: float = 0.1
-    probability_of_needing_blood_test_for_doctor_transplant: float = 0.1
-    probability_of_needing_blood_test_for_doctor_other: float = 0.1
+    probability_of_needing_long_blood_test: float = 0.25 #long = chemistry, o.w. only blood count
 
-    mean_time_for_blood_test_results: int = 120 
+    mean_time_for_regular_blood_test: int = 40
+    mean_time_for_long_blood_test: int = 120 
 
 @dataclass
 class ModelParametersSingleQueue:
@@ -113,7 +98,7 @@ class ModelParametersSingleQueue:
     transplant_doctor_1_mean_service_time_complex: int = 40
     transplant_doctor_1_number_of_regular_patients: int = 12
     transplant_doctor_1_number_of_complex_patients: int = 1
-    transplant_doctor_1_number_of_patients = 10
+    transplant_doctor_1_number_of_patients = 13
     transplant_doctor_1_probability_of_complex_patient: float = transplant_doctor_1_number_of_complex_patients/(transplant_doctor_1_number_of_regular_patients + transplant_doctor_1_number_of_complex_patients)
 
     transplant_doctor_2_mean_service_time_regular: int = 20
@@ -140,15 +125,15 @@ class ModelParametersSingleQueue:
     probability_of_visiting_nurse_transplant: float = 1 #according to staff testimonies
     probability_of_visiting_nurse_other: float = 4/5 #guesstimate
 
-    general_nurse_station_assignment_probability_transplant: float = 5/6
+    general_nurse_station_assignment_probability_transplant_regular: float = 10/11
+    transplant_nurse_station_assignment_probability_transplant_regular: float = 1/11
+
     general_nurse_station_preparation_time_buffer: int = 3 #minutes for preparation
-    transplant_nurse_station_assignment_probability_transplant: float = 1/6
 
     q_flow_mean_service_time = 1
     secretary_mean_service_time = 4
 
-    probability_of_needing_blood_test_for_doctor_leukemia: float = 0.1
-    probability_of_needing_blood_test_for_doctor_transplant: float = 0.1
-    probability_of_needing_blood_test_for_doctor_other: float = 0.1
+    probability_of_needing_long_blood_test = 0.25
 
-    mean_time_for_blood_test_results: int = 120 
+    mean_time_for_regular_blood_test: int = 40
+    mean_time_for_long_blood_test: int = 120 
