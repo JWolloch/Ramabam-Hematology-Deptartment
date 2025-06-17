@@ -203,7 +203,7 @@ class Patient(SimClasses.BooleanEntity, ABC):
 
     @property
     def scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time(self) -> float:
-        if self._visits_nurse and self._nurse_service_start_time is not None:
+        if self._visits_nurse:
             return self._nurse_service_start_time - self.scheduled_arrival_time
         else:
             return None

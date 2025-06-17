@@ -94,6 +94,7 @@ secretary_station_wait_time_var = []
 
 general_nurse_station_wait_time_avg = []
 general_nurse_station_wait_time_var = []
+
 transplant_nurse_station_wait_time_avg = []
 transplant_nurse_station_wait_time_var = []
 
@@ -150,7 +151,6 @@ general_nurse_station_busy_var = []
 
 transplant_nurse_station_busy_avg = []
 transplant_nurse_station_busy_var = []
-
 
 leukemia_doctor_1_busy_avg = []
 leukemia_doctor_1_busy_var = []
@@ -239,18 +239,19 @@ for epoch in range(simulation_configuration.num_epochs):
     list_of_patients = utils.generate_patients(Calendar, model_parameters)
     for patient_list in list_of_patients:
         for patient in patient_list:
-            nurse_station = utils.assign_nurse_station_single_queue(patient.get_type(), patient.complexity_level, model_parameters)
-            patient.set_nurse_name(nurse_station)
+            if patient.visits_nurse:
+                nurse_station = utils.assign_nurse_station_single_queue(patient.get_type(), patient.complexity_level, model_parameters)
+                patient.set_nurse_name(nurse_station)
 
     nurse_num_patients = {"general_nurse_station": sum([utils.get_nurse_number_of_patients_single_queue(patient_list, "general_nurse_station") for patient_list in list_of_patients]),
                           "transplant_nurse_station": sum([utils.get_nurse_number_of_patients_single_queue(patient_list, "transplant_nurse_station") for patient_list in list_of_patients])}
     counters = {"general_nurse_station": 0, "transplant_nurse_station": 0}
 
-    #schedule long service times for patients that visit the transplant nurse station
+    #schedule long service times for patients that visit nurse 6
     for patient_list in list_of_patients:
         for index, patient in enumerate(patient_list):
             nurse_station = patient.nurse_name
-            if nurse_station == "general_nurse_station":
+            if nurse_station == "transplant_nurse_station":
                 if index == len(patient_list) - 1:
                     utils.personalize_patient_schedule(patient, None, model_parameters)
                 else:
@@ -259,12 +260,12 @@ for epoch in range(simulation_configuration.num_epochs):
         for patient_list in list_of_patients:
             for index, patient in enumerate(patient_list):
                 nurse_station = patient.nurse_name
-                if nurse_station != "general_nurse_station":
+                if nurse_station != "transplant_nurse_station":
                     if index == len(patient_list) - 1:
                         utils.personalize_patient_schedule(patient, None, model_parameters)
                     else:
                         utils.personalize_patient_schedule(patient, patient_list[index + 1], model_parameters)
-
+    
     doctors_start_service = False #Doctors only begin to see patients 150 minutes after the simulation starts (10:00 AM)
     schedule_start_time = 150
     utils.schedule_doctor_service_start_time(Calendar, schedule_start_time)
@@ -292,7 +293,7 @@ for epoch in range(simulation_configuration.num_epochs):
         
         elif NextEvent.EventType == "secretary_station_service_end":
             
-            utils.secretary_station_service_end_multi_queue(NextEvent.WhichObject, model_parameters, secretary_station, secretary_station_queue, secretary_station_wait_time, Calendar)
+            utils.secretary_station_service_end(NextEvent.WhichObject, model_parameters, secretary_station, secretary_station_queue, secretary_station_wait_time, Calendar)
         
         elif NextEvent.EventType == "general_nurse_station_start_of_waiting":
             general_nurse_station_queue_length.append(general_nurse_station_queue.NumQueue())
@@ -324,12 +325,36 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.set_patient_blood_test_results_ready_time(NextEvent.WhichObject, Calendar, model_parameters)
             utils.transplant_nurse_station_service_end(NextEvent.WhichObject, transplant_nurse_station, transplant_nurse_station_queue, transplant_nurse_station_wait_time, Calendar)
         
+        elif NextEvent.EventType == "general_nurse_station_start_of_waiting":
+            general_nurse_station_queue_length.append(general_nurse_station_queue.NumQueue())
+            utils.general_nurse_station_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, general_nurse_station_queue, general_nurse_station, general_nurse_station_wait_time, Calendar)   
+        
+        elif NextEvent.EventType == "general_nurse_station_service_start":
+            utils.general_nurse_station_service_start(NextEvent.WhichObject, model_parameters, Calendar)
+        
+        elif NextEvent.EventType == "general_nurse_station_service_end":
+            counters["general_nurse_station"] += 1
+            if counters["general_nurse_station"] == nurse_num_patients["general_nurse_station"]:
+                general_nurse_station_busy_avg.append(general_nurse_station.Mean())  # Use actual busy time
+                general_nurse_station_busy_var.append(general_nurse_station.Variance())  # Use actual busy time variance
+            utils.set_patient_blood_test_results_ready_time(NextEvent.WhichObject, Calendar, model_parameters)
+            utils.general_nurse_station_service_end(NextEvent.WhichObject, general_nurse_station, general_nurse_station_queue, general_nurse_station_wait_time, Calendar)
+        
         elif NextEvent.EventType == "receive_blood_test_results":
             NextEvent.WhichObject.receive_blood_test_results()
         
+        elif NextEvent.EventType == "set_doctor_service_start_flag_to_true":
+            doctors_start_service = True
+            # Check each doctor's queue
+            utils.check_doctor_queue_and_start_service(leukemia_doctor_1, leukemia_doctor_1_queue, leukemia_doctor_1_wait_time, Calendar, "leukemia_doctor_1")
+            utils.check_doctor_queue_and_start_service(leukemia_doctor_2, leukemia_doctor_2_queue, leukemia_doctor_2_wait_time, Calendar, "leukemia_doctor_2")
+            utils.check_doctor_queue_and_start_service(transplant_doctor_1, transplant_doctor_1_queue, transplant_doctor_1_wait_time, Calendar, "transplant_doctor_1")
+            utils.check_doctor_queue_and_start_service(transplant_doctor_2, transplant_doctor_2_queue, transplant_doctor_2_wait_time, Calendar, "transplant_doctor_2")
+            utils.check_doctor_queue_and_start_service(transplant_doctor_3, transplant_doctor_3_queue, transplant_doctor_3_wait_time, Calendar, "transplant_doctor_3")
+        
         elif NextEvent.EventType == "leukemia_doctor_1_start_of_waiting":
             leukemia_doctor_1_queue_length.append(leukemia_doctor_1_queue.NumQueue())
-            utils.leukemia_doctor_1_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, leukemia_doctor_1_queue, leukemia_doctor_1, leukemia_doctor_1_wait_time, Calendar)   
+            utils.leukemia_doctor_1_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, leukemia_doctor_1_queue, leukemia_doctor_1, leukemia_doctor_1_wait_time, Calendar, doctors_start_service)   
 
         elif NextEvent.EventType == "leukemia_doctor_1_service_start":
             utils.leukemia_doctor_1_service_start(NextEvent.WhichObject, model_parameters, Calendar)
@@ -339,7 +364,7 @@ for epoch in range(simulation_configuration.num_epochs):
         
         elif NextEvent.EventType == "leukemia_doctor_2_start_of_waiting":
             leukemia_doctor_2_queue_length.append(leukemia_doctor_2_queue.NumQueue())
-            utils.leukemia_doctor_2_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, leukemia_doctor_2_queue, leukemia_doctor_2, leukemia_doctor_2_wait_time, Calendar)
+            utils.leukemia_doctor_2_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, leukemia_doctor_2_queue, leukemia_doctor_2, leukemia_doctor_2_wait_time, Calendar, doctors_start_service)
         
         elif NextEvent.EventType == "leukemia_doctor_2_service_start":
             utils.leukemia_doctor_2_service_start(NextEvent.WhichObject, model_parameters, Calendar)
@@ -349,7 +374,7 @@ for epoch in range(simulation_configuration.num_epochs):
         
         elif NextEvent.EventType == "transplant_doctor_1_start_of_waiting":
             transplant_doctor_1_queue_length.append(transplant_doctor_1_queue.NumQueue())
-            utils.transplant_doctor_1_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, transplant_doctor_1_queue, transplant_doctor_1, transplant_doctor_1_wait_time, Calendar)
+            utils.transplant_doctor_1_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, transplant_doctor_1_queue, transplant_doctor_1, transplant_doctor_1_wait_time, Calendar, doctors_start_service)
         
         elif NextEvent.EventType == "transplant_doctor_1_service_start":
             utils.transplant_doctor_1_service_start(NextEvent.WhichObject, model_parameters, Calendar)
@@ -359,7 +384,7 @@ for epoch in range(simulation_configuration.num_epochs):
         
         elif NextEvent.EventType == "transplant_doctor_2_start_of_waiting":
             transplant_doctor_2_queue_length.append(transplant_doctor_2_queue.NumQueue())
-            utils.transplant_doctor_2_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, transplant_doctor_2_queue, transplant_doctor_2, transplant_doctor_2_wait_time, Calendar)
+            utils.transplant_doctor_2_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, transplant_doctor_2_queue, transplant_doctor_2, transplant_doctor_2_wait_time, Calendar, doctors_start_service)
         
         elif NextEvent.EventType == "transplant_doctor_2_service_start":
             utils.transplant_doctor_2_service_start(NextEvent.WhichObject, model_parameters, Calendar)
@@ -369,7 +394,7 @@ for epoch in range(simulation_configuration.num_epochs):
         
         elif NextEvent.EventType == "transplant_doctor_3_start_of_waiting":
             transplant_doctor_3_queue_length.append(transplant_doctor_3_queue.NumQueue())
-            utils.transplant_doctor_3_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, transplant_doctor_3_queue, transplant_doctor_3, transplant_doctor_3_wait_time, Calendar)
+            utils.transplant_doctor_3_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, transplant_doctor_3_queue, transplant_doctor_3, transplant_doctor_3_wait_time, Calendar, doctors_start_service)
         
         elif NextEvent.EventType == "transplant_doctor_3_service_start":
             utils.transplant_doctor_3_service_start(NextEvent.WhichObject, model_parameters, Calendar)
@@ -487,7 +512,10 @@ for epoch in range(simulation_configuration.num_epochs):
     transplant_nurse_station_scheduled_vs_actual_time_diff_var.append(transplant_nurse_station_scheduled_vs_actual_time_diff.StdDev()**2)
 
     if epoch == 0:
-        utils.generate_patient_attributes_csv(list_of_patients, "results_directory/single_queue/patient_attributes.csv")
+        if simulation_configuration.personalize_schedule:
+            utils.generate_patient_attributes_csv(list_of_patients, "results_directory/single_queue/personalized/patient_attributes.csv")
+        else:
+            utils.generate_patient_attributes_csv(list_of_patients, "results_directory/single_queue/current_state/patient_attributes.csv")
 
     pbar_outer.set_description(f"Running Simulation - {epoch+1}/{simulation_configuration.num_epochs}")
 
@@ -495,6 +523,54 @@ for epoch in range(simulation_configuration.num_epochs):
 
 pbar_outer.close()
 print("Simulation completed")
+
+print("Array Lengths:")
+print(f"q_flow_station_wait_time_avg: {len(q_flow_station_wait_time_avg)}")
+print(f"q_flow_station_queue_length_avg: {len(q_flow_station_queue_length_avg)}")
+print(f"q_flow_station_busy_avg: {len(q_flow_station_busy_avg)}")
+print(f"secretary_station_wait_time_avg: {len(secretary_station_wait_time_avg)}")
+print(f"secretary_station_queue_length_avg: {len(secretary_station_queue_length_avg)}")
+print(f"secretary_station_busy_avg: {len(secretary_station_busy_avg)}")
+print(f"general_nurse_station_wait_time_avg: {len(general_nurse_station_wait_time_avg)}")
+print(f"general_nurse_station_queue_length_avg: {len(general_nurse_station_queue_length_avg)}")
+print(f"general_nurse_station_busy_avg: {len(general_nurse_station_busy_avg)}")
+print(f"transplant_nurse_station_wait_time_avg: {len(transplant_nurse_station_wait_time_avg)}")
+print(f"transplant_nurse_station_queue_length_avg: {len(transplant_nurse_station_queue_length_avg)}")
+print(f"transplant_nurse_station_busy_avg: {len(transplant_nurse_station_busy_avg)}")
+print(f"leukemia_doctor_1_wait_time_avg: {len(leukemia_doctor_1_wait_time_avg)}")
+print(f"leukemia_doctor_1_queue_length_avg: {len(leukemia_doctor_1_queue_length_avg)}")
+print(f"leukemia_doctor_1_busy_avg: {len(leukemia_doctor_1_busy_avg)}")
+print(f"leukemia_doctor_2_wait_time_avg: {len(leukemia_doctor_2_wait_time_avg)}")
+print(f"leukemia_doctor_2_queue_length_avg: {len(leukemia_doctor_2_queue_length_avg)}")
+print(f"leukemia_doctor_2_busy_avg: {len(leukemia_doctor_2_busy_avg)}")
+print(f"transplant_doctor_1_wait_time_avg: {len(transplant_doctor_1_wait_time_avg)}")
+print(f"transplant_doctor_1_queue_length_avg: {len(transplant_doctor_1_queue_length_avg)}")
+print(f"transplant_doctor_1_busy_avg: {len(transplant_doctor_1_busy_avg)}")
+print(f"transplant_doctor_2_wait_time_avg: {len(transplant_doctor_2_wait_time_avg)}")
+print(f"transplant_doctor_2_queue_length_avg: {len(transplant_doctor_2_queue_length_avg)}")
+print(f"transplant_doctor_2_busy_avg: {len(transplant_doctor_2_busy_avg)}")
+print(f"transplant_doctor_3_wait_time_avg: {len(transplant_doctor_3_wait_time_avg)}")
+print(f"transplant_doctor_3_queue_length_avg: {len(transplant_doctor_3_queue_length_avg)}")
+print(f"transplant_doctor_3_busy_avg: {len(transplant_doctor_3_busy_avg)}")
+print(f"other_patients_total_processing_time_avg: {len(other_patients_total_processing_time_avg)}")
+print(f"leukemia_doctor_1_complex_patients_total_processing_time_avg: {len(leukemia_doctor_1_complex_patients_total_processing_time_avg)}")
+print(f"leukemia_doctor_1_regular_patients_total_processing_time_avg: {len(leukemia_doctor_1_regular_patients_total_processing_time_avg)}")
+print(f"leukemia_doctor_2_complex_patients_total_processing_time_avg: {len(leukemia_doctor_2_complex_patients_total_processing_time_avg)}")
+print(f"leukemia_doctor_2_regular_patients_total_processing_time_avg: {len(leukemia_doctor_2_regular_patients_total_processing_time_avg)}")
+print(f"transplant_doctor_1_complex_patients_total_processing_time_avg: {len(transplant_doctor_1_complex_patients_total_processing_time_avg)}")
+print(f"transplant_doctor_1_regular_patients_total_processing_time_avg: {len(transplant_doctor_1_regular_patients_total_processing_time_avg)}")
+print(f"transplant_doctor_2_complex_patients_total_processing_time_avg: {len(transplant_doctor_2_complex_patients_total_processing_time_avg)}")
+print(f"transplant_doctor_2_regular_patients_total_processing_time_avg: {len(transplant_doctor_2_regular_patients_total_processing_time_avg)}")
+print(f"transplant_doctor_3_complex_patients_total_processing_time_avg: {len(transplant_doctor_3_complex_patients_total_processing_time_avg)}")
+print(f"transplant_doctor_3_regular_patients_total_processing_time_avg: {len(transplant_doctor_3_regular_patients_total_processing_time_avg)}")
+print(f"leukemia_doctor_1_scheduled_vs_actual_time_diff_avg: {len(leukemia_doctor_1_scheduled_vs_actual_time_diff_avg)}")
+print(f"leukemia_doctor_2_scheduled_vs_actual_time_diff_avg: {len(leukemia_doctor_2_scheduled_vs_actual_time_diff_avg)}")
+print(f"transplant_doctor_1_scheduled_vs_actual_time_diff_avg: {len(transplant_doctor_1_scheduled_vs_actual_time_diff_avg)}")
+print(f"transplant_doctor_2_scheduled_vs_actual_time_diff_avg: {len(transplant_doctor_2_scheduled_vs_actual_time_diff_avg)}")
+print(f"transplant_doctor_3_scheduled_vs_actual_time_diff_avg: {len(transplant_doctor_3_scheduled_vs_actual_time_diff_avg)}")
+print(f"general_nurse_station_scheduled_vs_actual_time_diff_avg: {len(general_nurse_station_scheduled_vs_actual_time_diff_avg)}")
+print(f"transplant_nurse_station_scheduled_vs_actual_time_diff_avg: {len(transplant_nurse_station_scheduled_vs_actual_time_diff_avg)}")
+print("**********************************************************************************")
 
 averages_df = pd.DataFrame({
     "q_flow_station_wait_time_avg": q_flow_station_wait_time_avg,
@@ -545,8 +621,12 @@ averages_df = pd.DataFrame({
     })
 
 os.makedirs("results_directory/single_queue", exist_ok=True)
-averages_df.to_csv(f"results_directory/single_queue/averages_data.csv")
-print(f"Simulation Results Saved to results_directory/single_queue/averages_data.csv")
+if simulation_configuration.personalize_schedule:
+    averages_df.to_csv(f"results_directory/single_queue/personalized/averages_data.csv")
+    print(f"Simulation Results Saved to results_directory/single_queue/personalized/averages_data.csv")
+else:
+    averages_df.to_csv(f"results_directory/single_queue/current_state/averages_data.csv")
+    print(f"Simulation Results Saved to results_directory/single_queue/current_state/averages_data.csv")
 print("**********************************************************************************")
 print("Means of the simulation results:")
 print(averages_df.mean())
@@ -574,6 +654,8 @@ variances_df = pd.DataFrame({
     "general_nurse_station_queue_length_var": general_nurse_station_queue_length_var,
     "general_nurse_station_busy_var": general_nurse_station_busy_var,
     "transplant_nurse_station_wait_time_var": transplant_nurse_station_wait_time_var,
+    "transplant_nurse_station_queue_length_var": transplant_nurse_station_queue_length_var,
+    "transplant_nurse_station_busy_var": transplant_nurse_station_busy_var,
     "leukemia_doctor_1_wait_time_var": leukemia_doctor_1_wait_time_var,
     "leukemia_doctor_1_queue_length_var": leukemia_doctor_1_queue_length_var,
     "leukemia_doctor_1_busy_var": leukemia_doctor_1_busy_var,
@@ -610,8 +692,12 @@ variances_df = pd.DataFrame({
 })
 
 os.makedirs("results_directory/single_queue", exist_ok=True)
-variances_df.to_csv(f"results_directory/single_queue/variances_data.csv")
-print("Simulation Variance Results Saved to results_directory/single_queue/variances_data.csv")
+if simulation_configuration.personalize_schedule:
+    variances_df.to_csv(f"results_directory/single_queue/personalized/variances_data.csv")
+    print("Simulation Variance Results Saved to results_directory/single_queue/personalized/variances_data.csv")
+else:
+    variances_df.to_csv(f"results_directory/single_queue/current_state/variances_data.csv")
+    print("Simulation Variance Results Saved to results_directory/single_queue/current_state/variances_data.csv")
 print("**********************************************************************************")
 
 # Number of epochs

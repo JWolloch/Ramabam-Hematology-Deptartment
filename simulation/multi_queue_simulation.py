@@ -361,12 +361,11 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.secretary_station_start_of_waiting(NextEvent.WhichObject, SimClasses.Clock, secretary_station_queue, secretary_station, secretary_station_wait_time, Calendar)
         
         elif NextEvent.EventType == "secretary_station_service_start":
-            print(f"secretary service start time: {SimClasses.Clock}")
             utils.secretary_station_service_start(NextEvent.WhichObject, model_parameters, Calendar)
         
         elif NextEvent.EventType == "secretary_station_service_end":
             
-            utils.secretary_station_service_end_multi_queue(NextEvent.WhichObject, model_parameters, secretary_station, secretary_station_queue, secretary_station_wait_time, Calendar)
+            utils.secretary_station_service_end(NextEvent.WhichObject, model_parameters, secretary_station, secretary_station_queue, secretary_station_wait_time, Calendar)
         
         elif NextEvent.EventType == "nurse_station_1_start_of_waiting":
             nurse_station_1_queue_length.append(nurse_station_1_queue.NumQueue())
@@ -655,7 +654,10 @@ for epoch in range(simulation_configuration.num_epochs):
     nurse_station_6_scheduled_vs_actual_time_diff_var.append(nurse_station_6_scheduled_vs_actual_time_diff.StdDev()**2)
 
     if epoch == 0:
-        utils.generate_patient_attributes_csv(list_of_patients, "results_directory/multi_queue/patient_attributes.csv")
+        if simulation_configuration.personalize_schedule:
+            utils.generate_patient_attributes_csv(list_of_patients, "results_directory/multi_queue/personalized/patient_attributes.csv")
+        else:
+            utils.generate_patient_attributes_csv(list_of_patients, "results_directory/multi_queue/current_state/patient_attributes.csv")
 
     pbar_outer.set_description(f"Running Simulation - {epoch+1}/{simulation_configuration.num_epochs}")
 
@@ -793,8 +795,12 @@ averages_df = pd.DataFrame({
     })
 
 os.makedirs("results_directory/multi_queue", exist_ok=True)
-averages_df.to_csv(f"results_directory/multi_queue/averages_data.csv")
-print(f"Simulation Results Saved to results_directory/multi_queue/averages_data.csv")
+if simulation_configuration.personalize_schedule:
+    averages_df.to_csv(f"results_directory/multi_queue/personalized/averages_data.csv")
+    print(f"Simulation Results Saved to results_directory/multi_queue/personalized/averages_data.csv")
+else:
+    averages_df.to_csv(f"results_directory/multi_queue/current_state/averages_data.csv")
+    print(f"Simulation Results Saved to results_directory/multi_queue/current_state/averages_data.csv")
 print("**********************************************************************************")
 print("Means of the simulation results:")
 print(averages_df.mean())
@@ -876,8 +882,12 @@ variances_df = pd.DataFrame({
 })
 
 os.makedirs("results_directory/multi_queue", exist_ok=True)
-variances_df.to_csv(f"results_directory/multi_queue/variances_data.csv")
-print("Simulation Variance Results Saved to results_directory/multi_queue/variances_data.csv")
+if simulation_configuration.personalize_schedule:
+    variances_df.to_csv(f"results_directory/multi_queue/personalized/variances_data.csv")
+    print("Simulation Variance Results Saved to results_directory/multi_queue/personalized/variances_data.csv")
+else:
+    variances_df.to_csv(f"results_directory/multi_queue/current_state/variances_data.csv")
+    print("Simulation Variance Results Saved to results_directory/multi_queue/current_state/variances_data.csv")
 print("**********************************************************************************")
 
 # Number of epochs

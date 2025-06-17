@@ -310,27 +310,10 @@ def secretary_station_service_start(new_patient: Patient, model_parameters: Mode
     new_patient.secretary_service_start(SimClasses.Clock)
     SimFunctions.SchedulePlus(calendar, "secretary_station_service_end", secretary_station_service_duration, new_patient)
 
-def secretary_station_service_end_multi_queue(new_patient: Patient, model_parameters: ModelParametersMultiQueue, secretary_station: SimClasses.Resource, secretary_station_queue: SimClasses.FIFOQueue, secretary_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
+def secretary_station_service_end(new_patient: Patient, model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue, secretary_station: SimClasses.Resource, secretary_station_queue: SimClasses.FIFOQueue, secretary_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     has_nurse_appointment = new_patient.visits_nurse
     if has_nurse_appointment:
         nurse_station = new_patient.nurse_name
-        SimFunctions.SchedulePlus(calendar, f'{nurse_station}_start_of_waiting', 0, new_patient)
-    else:
-        SimFunctions.SchedulePlus(calendar, f'{new_patient.doctor_name}_start_of_waiting', 0, new_patient)
-    
-    secretary_station.Free(1)
-    if secretary_station.CurrentNumBusy < secretary_station.NumberOfUnits and secretary_station_queue.NumQueue() > 0:
-        secretary_station.Seize(1)
-        next_patient = secretary_station_queue.Remove()
-        secretary_station_wait_time.Record(SimClasses.Clock - next_patient.enter_secretary_queue_time)
-        SimFunctions.SchedulePlus(calendar, "secretary_station_service_start", 0, next_patient)
-
-def secretary_station_service_end_single_queue(new_patient: Patient, model_parameters: ModelParametersSingleQueue, secretary_station: SimClasses.Resource, secretary_station_queue: SimClasses.FIFOQueue, secretary_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
-    patient_type = new_patient.get_type()
-    patient_complexity = new_patient.complexity_level
-    has_nurse_appointment = new_patient.visits_nurse
-    if has_nurse_appointment:
-        nurse_station = assign_nurse_station_single_queue(patient_type, patient_complexity, model_parameters)
         SimFunctions.SchedulePlus(calendar, f'{nurse_station}_start_of_waiting', 0, new_patient)
     else:
         SimFunctions.SchedulePlus(calendar, f'{new_patient.doctor_name}_start_of_waiting', 0, new_patient)
@@ -562,7 +545,7 @@ def transplant_doctor_1_start_of_waiting(new_patient: Patient, clock: float, tra
 def transplant_doctor_2_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_2_queue: SimClasses.FIFOQueue, transplant_doctor_2: SimClasses.Resource, transplant_doctor_2_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar, doctors_start_service: bool):
     transplant_doctor_2_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
-    if transplant_doctor_2.CurrentNumBusy < transplant_doctor_2.NumberOfUnits:
+    if transplant_doctor_2.CurrentNumBusy < transplant_doctor_2.NumberOfUnits and doctors_start_service:
         next_patient = transplant_doctor_2_queue.Remove()
         if next_patient is not None:
             transplant_doctor_2.Seize(1)
@@ -736,17 +719,17 @@ def process_complete(new_patient: Patient, clock: float, nurse_station_1_schedul
     else:
         raise ValueError(f"Invalid doctor name: {new_patient.doctor_name}")
     
-    if new_patient.nurse_name == "nurse_1":
+    if new_patient.nurse_name == "nurse_station_1":
         nurse_station_1_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
-    elif new_patient.nurse_name == "nurse_2":
+    elif new_patient.nurse_name == "nurse_station_2":
         nurse_station_2_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
-    elif new_patient.nurse_name == "nurse_3":
+    elif new_patient.nurse_name == "nurse_station_3":
         nurse_station_3_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
-    elif new_patient.nurse_name == "nurse_4":
+    elif new_patient.nurse_name == "nurse_station_4":
         nurse_station_4_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
-    elif new_patient.nurse_name == "nurse_5":
+    elif new_patient.nurse_name == "nurse_station_5":
         nurse_station_5_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
-    elif new_patient.nurse_name == "nurse_6":
+    elif new_patient.nurse_name == "nurse_station_6":
         nurse_station_6_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time)
     
     new_patient.end_visit(clock)
@@ -821,6 +804,7 @@ def general_nurse_station_start_of_waiting(new_patient: Patient, clock: float, m
         next_patient = general_nurse_station_queue.Remove()
         general_nurse_station_wait_time.Record(SimClasses.Clock - next_patient.enter_nurse_queue_time)
         SimFunctions.SchedulePlus(calendar, "general_nurse_station_service_start", model_parameters.general_nurse_station_preparation_time_buffer, next_patient)
+
 
 def general_nurse_station_service_start(new_patient: Patient, model_parameters: ModelParametersSingleQueue, calendar: SimClasses.EventCalendar):
     patient_complexity = new_patient.complexity_level
@@ -898,6 +882,8 @@ def generate_patient_attributes_csv(patients: list[list[Patient]], output_path: 
         nurse_scheduled_vs_actual_time_diff = None
         if patient.get_type() != "other":
             doctor_scheduled_vs_actual_time_diff = patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if patient.visits_nurse:
+            nurse_scheduled_vs_actual_time_diff = patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time
         patient_dict = {
             'Patient Type': patient.get_type(),
             'Doctor Name': patient.doctor_name,
