@@ -34,6 +34,9 @@ class Patient(SimClasses.BooleanEntity, ABC):
         self._end_of_visit_time = None
         self._nurse_service_start_time = None
         self._doctor_service_start_time = None
+        self._q_flow_service_start_time = None
+        self._secretary_service_start_time = None
+        
         self._arrival_time = self._set_arrival_time()
     
     def _determine_if_visits_nurse(self) -> bool:
@@ -71,8 +74,7 @@ class Patient(SimClasses.BooleanEntity, ABC):
         return dist.rvs(1)[0]
     
     def schedule_arrival(self, calendar: SimClasses.EventCalendar):
-        arrival_time = self._arrival_time
-        SimFunctions.SchedulePlus(calendar, f"q_flow_station_start_of_waiting", arrival_time, self)
+        SimFunctions.SchedulePlus(calendar, f"q_flow_station_start_of_waiting", self._arrival_time, self)
 
 
     def enter_q_flow_queue(self, clock: float):
@@ -88,8 +90,7 @@ class Patient(SimClasses.BooleanEntity, ABC):
         self._secretary_service_start_time = clock
     
     def set_nurse_name(self, nurse_name: str):
-        if self._visits_nurse:
-            self._nurse_name = nurse_name
+        self._nurse_name = nurse_name
 
     def enter_nurse_queue(self, clock: float):
         self._enter_nurse_queue_time = clock
@@ -109,6 +110,10 @@ class Patient(SimClasses.BooleanEntity, ABC):
 
     def calculate_total_visit_time(self) -> float:
         return self._end_of_visit_time - self._arrival_time
+    
+    def set_scheduled_arrival_time(self, new_arrival_time: float):
+        self._schedule['arrival_time'] = new_arrival_time
+        self._arrival_time = self._set_arrival_time()
 
 #########################
 ##### Helper Methods#####
@@ -189,16 +194,16 @@ class Patient(SimClasses.BooleanEntity, ABC):
         return self._arrival_time
     
     @property
+    def scheduled_arrival_time(self) -> float:
+        return self._schedule.get("arrival_time")
+    
+    @property
     def needs_long_blood_test(self) -> bool:
         return self._needs_long_blood_test
 
     @property
     def scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time(self) -> float:
-        if self._visits_nurse:
-            return self._nurse_service_start_time - self._schedule.get("arrival_time")
+        if self._visits_nurse and self._nurse_service_start_time is not None:
+            return self._nurse_service_start_time - self.scheduled_arrival_time
         else:
             return None
-
-    @property
-    def nurse_service_start_time(self) -> float | None:
-        return self._nurse_service_start_time

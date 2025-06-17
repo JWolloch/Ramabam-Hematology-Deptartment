@@ -246,8 +246,29 @@ for epoch in range(simulation_configuration.num_epochs):
                           "transplant_nurse_station": sum([utils.get_nurse_number_of_patients_single_queue(patient_list, "transplant_nurse_station") for patient_list in list_of_patients])}
     counters = {"general_nurse_station": 0, "transplant_nurse_station": 0}
 
-    if epoch == 0:
-        print(nurse_num_patients)
+    #schedule long service times for patients that visit the transplant nurse station
+    for patient_list in list_of_patients:
+        for index, patient in enumerate(patient_list):
+            nurse_station = patient.nurse_name
+            if nurse_station == "general_nurse_station":
+                if index == len(patient_list) - 1:
+                    utils.personalize_patient_schedule(patient, None, model_parameters)
+                else:
+                    utils.personalize_patient_schedule(patient, patient_list[index + 1], model_parameters)
+    if simulation_configuration.personalize_schedule:
+        for patient_list in list_of_patients:
+            for index, patient in enumerate(patient_list):
+                nurse_station = patient.nurse_name
+                if nurse_station != "general_nurse_station":
+                    if index == len(patient_list) - 1:
+                        utils.personalize_patient_schedule(patient, None, model_parameters)
+                    else:
+                        utils.personalize_patient_schedule(patient, patient_list[index + 1], model_parameters)
+
+    doctors_start_service = False #Doctors only begin to see patients 150 minutes after the simulation starts (10:00 AM)
+    schedule_start_time = 150
+    utils.schedule_doctor_service_start_time(Calendar, schedule_start_time)
+    
     while Calendar.N() > 0 and not utils.all_left_department(list_of_patients):
         NextEvent = Calendar.Remove()
         SimClasses.Clock = NextEvent.EventTime

@@ -97,11 +97,7 @@ def all_left_department(patients: list[list[Patient]]) -> bool:
 
 def create_patient_schedule(arrival_time: int):
     return {'arrival_time': arrival_time,
-            'doctor_consultation_time': arrival_time + 120,
-            'nurse_consultation_duration_current': 20,
-            'doctor_consultation_duration_current': 20,
-            'personalize_schedule': True
-            }
+            'doctor_consultation_time': arrival_time + 120}
 
 
 def initialize_patients(patient_arrival_times: list[int],
@@ -228,6 +224,27 @@ def generate_patients(calendar: SimClasses.EventCalendar,parameters: ModelParame
         transplant_doctor_3_patients,
         other_patients,
     ]
+
+def personalize_patient_schedule(current_patient: Patient, next_patient: Patient | None, model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue):
+    complexity_level = current_patient.complexity_level
+    if next_patient is None or complexity_level == "regular":
+        return
+    else:
+        nurse_regular_service_time = np.random.exponential(model_parameters.nurse_mean_service_time_regular)
+        nurse_complex_service_time = np.random.exponential(model_parameters.nurse_mean_service_time_complex)
+        time_to_add = nurse_complex_service_time - nurse_regular_service_time
+        next_patient.set_scheduled_arrival_time(current_patient.scheduled_arrival_time + time_to_add)
+
+def schedule_long_nurse_service_times(list_of_patients: list[Patient], model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue):
+    n = len(list_of_patients)
+    for index, patient in enumerate(list_of_patients):
+        if index == n - 1:
+            personalize_patient_schedule(patient, None, model_parameters)
+        else:
+            personalize_patient_schedule(patient, list_of_patients[index + 1], model_parameters)
+
+def schedule_patient_arrival(patient: Patient, calendar: SimClasses.EventCalendar):
+    patient.schedule_arrival(calendar)
 
 def get_nurse_number_of_patients_multi_queue(patient_list: list[Patient], nurse_name: str) -> int:
     if nurse_name == "nurse_station_1":
@@ -512,37 +529,37 @@ def nurse_station_6_service_end(new_patient: Patient, nurse_station_6: SimClasse
         nurse_station_6_wait_time.Record(SimClasses.Clock - next_patient.enter_nurse_queue_time)
         SimFunctions.SchedulePlus(calendar, "nurse_station_6_service_start", 0, next_patient)
 
-def leukemia_doctor_1_start_of_waiting(new_patient: Patient, clock: float, leukemia_doctor_1_queue: SimClasses.FIFOQueue, leukemia_doctor_1: SimClasses.Resource, leukemia_doctor_1_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
+def leukemia_doctor_1_start_of_waiting(new_patient: Patient, clock: float, leukemia_doctor_1_queue: SimClasses.FIFOQueue, leukemia_doctor_1: SimClasses.Resource, leukemia_doctor_1_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar, doctors_start_service: bool):
     leukemia_doctor_1_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
-    if leukemia_doctor_1.CurrentNumBusy < leukemia_doctor_1.NumberOfUnits:
+    if leukemia_doctor_1.CurrentNumBusy < leukemia_doctor_1.NumberOfUnits and doctors_start_service:
         next_patient = leukemia_doctor_1_queue.Remove()
         if next_patient is not None:
             leukemia_doctor_1.Seize(1)
             leukemia_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
-            SimFunctions.SchedulePlus(calendar, "leukemia_doctor_1_service_start", 0, next_patient)
+            SimFunctions.SchedulePlus(calendar, "leukemia_doctor_1_service_start", 0, next_patient)    
 
-def leukemia_doctor_2_start_of_waiting(new_patient: Patient, clock: float, leukemia_doctor_2_queue: SimClasses.FIFOQueue, leukemia_doctor_2: SimClasses.Resource, leukemia_doctor_2_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
+def leukemia_doctor_2_start_of_waiting(new_patient: Patient, clock: float, leukemia_doctor_2_queue: SimClasses.FIFOQueue, leukemia_doctor_2: SimClasses.Resource, leukemia_doctor_2_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar, doctors_start_service: bool):
     leukemia_doctor_2_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
-    if leukemia_doctor_2.CurrentNumBusy < leukemia_doctor_2.NumberOfUnits:
+    if leukemia_doctor_2.CurrentNumBusy < leukemia_doctor_2.NumberOfUnits and doctors_start_service:
         next_patient = leukemia_doctor_2_queue.Remove()
         if next_patient is not None:
             leukemia_doctor_2.Seize(1)
             leukemia_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
             SimFunctions.SchedulePlus(calendar, "leukemia_doctor_2_service_start", 0, next_patient)
 
-def transplant_doctor_1_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_1_queue: SimClasses.FIFOQueue, transplant_doctor_1: SimClasses.Resource, transplant_doctor_1_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
+def transplant_doctor_1_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_1_queue: SimClasses.FIFOQueue, transplant_doctor_1: SimClasses.Resource, transplant_doctor_1_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar, doctors_start_service: bool):
     transplant_doctor_1_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
-    if transplant_doctor_1.CurrentNumBusy < transplant_doctor_1.NumberOfUnits:
+    if transplant_doctor_1.CurrentNumBusy < transplant_doctor_1.NumberOfUnits and doctors_start_service:
         next_patient = transplant_doctor_1_queue.Remove()
         if next_patient is not None:
             transplant_doctor_1.Seize(1)
             transplant_doctor_1_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
             SimFunctions.SchedulePlus(calendar, "transplant_doctor_1_service_start", 0, next_patient)
 
-def transplant_doctor_2_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_2_queue: SimClasses.FIFOQueue, transplant_doctor_2: SimClasses.Resource, transplant_doctor_2_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
+def transplant_doctor_2_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_2_queue: SimClasses.FIFOQueue, transplant_doctor_2: SimClasses.Resource, transplant_doctor_2_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar, doctors_start_service: bool):
     transplant_doctor_2_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
     if transplant_doctor_2.CurrentNumBusy < transplant_doctor_2.NumberOfUnits:
@@ -552,10 +569,10 @@ def transplant_doctor_2_start_of_waiting(new_patient: Patient, clock: float, tra
             transplant_doctor_2_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
             SimFunctions.SchedulePlus(calendar, "transplant_doctor_2_service_start", 0, next_patient)
 
-def transplant_doctor_3_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_3_queue: SimClasses.FIFOQueue, transplant_doctor_3: SimClasses.Resource, transplant_doctor_3_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
+def transplant_doctor_3_start_of_waiting(new_patient: Patient, clock: float, transplant_doctor_3_queue: SimClasses.FIFOQueue, transplant_doctor_3: SimClasses.Resource, transplant_doctor_3_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar, doctors_start_service: bool):
     transplant_doctor_3_queue.Add(new_patient)
     new_patient.enter_doctor_queue(clock)
-    if transplant_doctor_3.CurrentNumBusy < transplant_doctor_3.NumberOfUnits:
+    if transplant_doctor_3.CurrentNumBusy < transplant_doctor_3.NumberOfUnits and doctors_start_service:
         next_patient = transplant_doctor_3_queue.Remove()
         if next_patient is not None:
             transplant_doctor_3.Seize(1)
@@ -860,6 +877,9 @@ def transplant_nurse_station_service_end(new_patient: Patient, transplant_nurse_
         transplant_nurse_station_wait_time.Record(SimClasses.Clock - next_patient.enter_nurse_queue_time)
         SimFunctions.SchedulePlus(calendar, "transplant_nurse_station_service_start", 0, next_patient)
 
+def schedule_doctor_service_start_time(calendar: SimClasses.EventCalendar, schedule_start_time: int):
+    SimFunctions.Schedule(calendar, f"set_doctor_service_start_flag_to_true", schedule_start_time)
+
 def generate_patient_attributes_csv(patients: list[list[Patient]], output_path: str = "results_directory/patient_attributes.csv"):
     """
     Generate a CSV file containing all attributes of patients from the simulation.
@@ -875,6 +895,7 @@ def generate_patient_attributes_csv(patients: list[list[Patient]], output_path: 
     patient_data = []
     for patient in all_patients:
         doctor_scheduled_vs_actual_time_diff = None
+        nurse_scheduled_vs_actual_time_diff = None
         if patient.get_type() != "other":
             doctor_scheduled_vs_actual_time_diff = patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
         patient_dict = {
@@ -893,7 +914,7 @@ def generate_patient_attributes_csv(patients: list[list[Patient]], output_path: 
             'Nurse Service Start Time': patient.nurse_service_start_time,
             'Doctor Queue Entry Time': patient.enter_doctor_queue_time,
             'End of Visit Time': patient.end_of_visit_time,
-            'Scheduled vs Actual Nurse Time Diff': None if not patient.visits_nurse else patient.scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time,
+            'Scheduled vs Actual Nurse Time Diff': nurse_scheduled_vs_actual_time_diff,
             'Scheduled vs Actual Doctor Time Diff': doctor_scheduled_vs_actual_time_diff
         }
         patient_data.append(patient_dict)
@@ -907,3 +928,21 @@ def generate_patient_attributes_csv(patients: list[list[Patient]], output_path: 
     # Save to CSV
     df.to_csv(output_path, index=False)
     print(f"Patient attributes saved to {output_path}")
+
+def check_doctor_queue_and_start_service(doctor: SimClasses.Resource, doctor_queue: SimClasses.FIFOQueue, doctor_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar, doctor_name: str):
+    """
+    Check if a doctor is idle and has patients waiting, and if so, start serving the next patient.
+    
+    Args:
+        doctor: The doctor resource
+        doctor_queue: The doctor's queue
+        doctor_wait_time: The wait time statistic for this doctor
+        calendar: The simulation calendar
+        doctor_name: The name of the doctor (e.g. "leukemia_doctor_1")
+    """
+    if doctor.CurrentNumBusy < doctor.NumberOfUnits and doctor_queue.NumQueue() > 0:
+        next_patient = doctor_queue.Remove()
+        if next_patient is not None:
+            doctor.Seize(1)
+            doctor_wait_time.Record(SimClasses.Clock - next_patient.enter_doctor_queue_time)
+            SimFunctions.SchedulePlus(calendar, f"{doctor_name}_service_start", 0, next_patient)
