@@ -24,4 +24,12 @@ class LeukemiaPatient(Patient):
         if self._doctor_service_start_time is None or "doctor_consultation_time" not in self._schedule:
             return None
         return self._doctor_service_start_time - self._schedule.get("doctor_consultation_time")
+    
+    @property
+    def doctor_service_start_time(self) -> float | None:
+        return self._doctor_service_start_time
+    
+    @property
+    def scheduled_doctor_consultation_time(self) -> float:
+        return self._schedule.get("doctor_consultation_time")
 

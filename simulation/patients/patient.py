@@ -33,6 +33,7 @@ class Patient(SimClasses.BooleanEntity, ABC):
         self._enter_doctor_queue_time = None
         self._end_of_visit_time = None
         self._nurse_service_start_time = None
+        self._blood_test_retrievel_time = None
         self._doctor_service_start_time = None
         self._q_flow_service_start_time = None
         self._secretary_service_start_time = None
@@ -100,9 +101,10 @@ class Patient(SimClasses.BooleanEntity, ABC):
 
     @abstractmethod
     def enter_doctor_queue(self, clock: float):
-        raise NotImplementedError("Subclasses must implement this method")
+        raise NotImplementedError("Subclasses must implement this method")        
     
-    def receive_blood_test_results(self):
+    def receive_blood_test_results(self, clock: float):
+        self._blood_test_retrievel_time = clock
         self.condition = True
 
     def end_visit(self, clock: float):
@@ -200,6 +202,10 @@ class Patient(SimClasses.BooleanEntity, ABC):
     @property
     def needs_long_blood_test(self) -> bool:
         return self._needs_long_blood_test
+    
+    @property
+    def blood_test_retrievel_time(self) -> bool:
+        return self._blood_test_retrievel_time
 
     @property
     def scheduled_nurse_consultation_time_vs_actual_nurse_consultation_time(self) -> float:

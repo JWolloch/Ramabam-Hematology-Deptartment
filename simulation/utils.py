@@ -176,8 +176,6 @@ def layered_patient_arrival_schedule(num_patients: int, start: int = 30, end: in
 
 
 def generate_patients(calendar: SimClasses.EventCalendar,parameters: ModelParametersMultiQueue | ModelParametersSingleQueue):
-
-    
     leukemia_doctor_1_patients = initialize_patients(
         layered_patient_arrival_schedule(
             randomize_number_of_patients(parameters.leukemia_doctor_1_number_of_regular_patients + parameters.leukemia_doctor_1_number_of_complex_patients)
@@ -229,9 +227,12 @@ def personalize_patient_schedule(current_patient: Patient, next_patient: Patient
     complexity_level = current_patient.complexity_level
     if next_patient is None or complexity_level == "regular":
         return
+    elif current_patient.nurse_name == "nurse_station_6" or current_patient.nurse_name == "transplant_nurse_station":
+        time_to_add = model_parameters.transplant_nurse_mean_service_time - model_parameters.nurse_mean_service_time_regular
+        next_patient.set_scheduled_arrival_time(current_patient.scheduled_arrival_time + time_to_add)
     else:
-        nurse_regular_service_time = np.random.exponential(model_parameters.nurse_mean_service_time_regular)
-        nurse_complex_service_time = np.random.exponential(model_parameters.nurse_mean_service_time_complex)
+        nurse_regular_service_time = model_parameters.nurse_mean_service_time_regular
+        nurse_complex_service_time = model_parameters.nurse_mean_service_time_complex
         time_to_add = nurse_complex_service_time - nurse_regular_service_time
         next_patient.set_scheduled_arrival_time(current_patient.scheduled_arrival_time + time_to_add)
 
@@ -312,10 +313,11 @@ def secretary_station_service_start(new_patient: Patient, model_parameters: Mode
 
 def secretary_station_service_end(new_patient: Patient, model_parameters: ModelParametersMultiQueue | ModelParametersSingleQueue, secretary_station: SimClasses.Resource, secretary_station_queue: SimClasses.FIFOQueue, secretary_station_wait_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     has_nurse_appointment = new_patient.visits_nurse
-    if has_nurse_appointment:
+    if has_nurse_appointment and new_patient.nurse_name != "N/A":
         nurse_station = new_patient.nurse_name
         SimFunctions.SchedulePlus(calendar, f'{nurse_station}_start_of_waiting', 0, new_patient)
     else:
+        new_patient.condition = True
         SimFunctions.SchedulePlus(calendar, f'{new_patient.doctor_name}_start_of_waiting', 0, new_patient)
     
     secretary_station.Free(1)
@@ -891,6 +893,7 @@ def generate_patient_attributes_csv(patients: list[list[Patient]], output_path: 
             'Visits Nurse': patient.visits_nurse,
             'Nurse Name': patient.nurse_name,
             'Needs Long Blood Test': patient.needs_long_blood_test,
+            'Scheduled Arrival Time': patient.scheduled_arrival_time,
             'Arrival Time': patient.arrival_time,
             'Q-Flow Queue Entry Time': patient.enter_q_flow_queue_time,
             'Q-Flow Service Start Time': patient.q_flow_service_start_time,
@@ -898,7 +901,10 @@ def generate_patient_attributes_csv(patients: list[list[Patient]], output_path: 
             'Secretary Service Start Time': patient.secretary_service_start_time,
             'Nurse Queue Entry Time': patient.enter_nurse_queue_time,
             'Nurse Service Start Time': patient.nurse_service_start_time,
-            'Doctor Queue Entry Time': patient.enter_doctor_queue_time,
+            'Time blood test results were received': patient.blood_test_retrievel_time,
+            'Scheduled Doctor Consultation Time': patient.scheduled_doctor_consultation_time if patient.get_type() != "other" else None,
+            'Doctor service start time': patient.doctor_service_start_time if patient.get_type() != "other" else None,
+            'Doctor Queue Entry Time': patient.enter_doctor_queue_time if patient.get_type() != "other" else None,
             'End of Visit Time': patient.end_of_visit_time,
             'Scheduled vs Actual Nurse Time Diff': nurse_scheduled_vs_actual_time_diff,
             'Scheduled vs Actual Doctor Time Diff': doctor_scheduled_vs_actual_time_diff

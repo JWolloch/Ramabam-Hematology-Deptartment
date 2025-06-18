@@ -458,7 +458,7 @@ for epoch in range(simulation_configuration.num_epochs):
             utils.nurse_station_6_service_end(NextEvent.WhichObject, nurse_station_6, nurse_station_6_queue, nurse_station_6_wait_time, Calendar)
         
         elif NextEvent.EventType == "receive_blood_test_results":
-            NextEvent.WhichObject.receive_blood_test_results()
+            NextEvent.WhichObject.receive_blood_test_results(SimClasses.Clock)
         
         elif NextEvent.EventType == "set_doctor_service_start_flag_to_true":
             doctors_start_service = True
