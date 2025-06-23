@@ -23,7 +23,7 @@ class Patient(SimClasses.BooleanEntity, ABC):
         self._complexity_level = self._determine_complexity_level()
         self._needs_long_blood_test = self._determine_if_needs_long_blood_test()
 
-        self.condition = False        
+        self.condition = False    
         self._nurse_name = None
         self._visits_nurse = self._determine_if_visits_nurse()
 

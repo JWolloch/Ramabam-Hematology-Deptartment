@@ -687,31 +687,41 @@ def transplant_doctor_3_service_end(new_patient: Patient, transplant_doctor_3: S
 def process_complete(new_patient: Patient, clock: float, nurse_station_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_3_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_4_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_5_scheduled_vs_actual_time_diff: SimClasses.DTStat, nurse_station_6_scheduled_vs_actual_time_diff: SimClasses.DTStat,
                       leukemia_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_3_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_regular_patients_total_processing_time: SimClasses.DTStat, other_patients_total_processing_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     if new_patient.doctor_name == "leukemia_doctor_1":
-        leukemia_doctor_1_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            leukemia_doctor_1_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             leukemia_doctor_1_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
             leukemia_doctor_1_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
     elif new_patient.doctor_name == "leukemia_doctor_2":
-        leukemia_doctor_2_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            leukemia_doctor_2_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             leukemia_doctor_2_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
             leukemia_doctor_2_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
     elif new_patient.doctor_name == "transplant_doctor_1":
-        transplant_doctor_1_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            transplant_doctor_1_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             transplant_doctor_1_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
             transplant_doctor_1_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
     elif new_patient.doctor_name == "transplant_doctor_2":
-        transplant_doctor_2_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            transplant_doctor_2_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             transplant_doctor_2_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
             transplant_doctor_2_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
     elif new_patient.doctor_name == "transplant_doctor_3":
-        transplant_doctor_3_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            transplant_doctor_3_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             transplant_doctor_3_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
@@ -739,31 +749,41 @@ def process_complete(new_patient: Patient, clock: float, nurse_station_1_schedul
 def process_complete_single_queue(new_patient: Patient, clock: float, general_nurse_station_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_nurse_station_scheduled_vs_actual_time_diff: SimClasses.DTStat,
                       leukemia_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, leukemia_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, leukemia_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_1_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_1_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_2_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_2_regular_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_scheduled_vs_actual_time_diff: SimClasses.DTStat, transplant_doctor_3_complex_patients_total_processing_time: SimClasses.DTStat, transplant_doctor_3_regular_patients_total_processing_time: SimClasses.DTStat, other_patients_total_processing_time: SimClasses.DTStat, calendar: SimClasses.EventCalendar):
     if new_patient.doctor_name == "leukemia_doctor_1":
-        leukemia_doctor_1_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            leukemia_doctor_1_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             leukemia_doctor_1_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
             leukemia_doctor_1_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
     elif new_patient.doctor_name == "leukemia_doctor_2":
-        leukemia_doctor_2_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            leukemia_doctor_2_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             leukemia_doctor_2_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
             leukemia_doctor_2_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
     elif new_patient.doctor_name == "transplant_doctor_1":
-        transplant_doctor_1_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            transplant_doctor_1_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             transplant_doctor_1_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
             transplant_doctor_1_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
     elif new_patient.doctor_name == "transplant_doctor_2":
-        transplant_doctor_2_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            transplant_doctor_2_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             transplant_doctor_2_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
             transplant_doctor_2_regular_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
     elif new_patient.doctor_name == "transplant_doctor_3":
-        transplant_doctor_3_scheduled_vs_actual_time_diff.Record(new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time)
+        time_diff = new_patient.scheduled_doctor_consultation_time_vs_actual_doctor_consultation_time
+        if time_diff is not None:
+            transplant_doctor_3_scheduled_vs_actual_time_diff.Record(time_diff)
         if new_patient.complexity_level == "complex":
             transplant_doctor_3_complex_patients_total_processing_time.Record(SimClasses.Clock - new_patient.arrival_time)
         else:
