@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class ModelParametersMultiQueue:
 
@@ -88,6 +89,10 @@ class ModelParametersMultiQueue:
     mean_time_for_regular_blood_test: int = 40
     mean_time_for_long_blood_test: int = 120 
 
+    @classmethod
+    def from_dict(cls, dict_of_parameters):
+        return cls(**dict_of_parameters)
+
 @dataclass
 class ModelParametersSingleQueue:
 
@@ -160,3 +165,7 @@ class ModelParametersSingleQueue:
 
     mean_time_for_regular_blood_test: int = 40
     mean_time_for_long_blood_test: int = 120 
+
+    @classmethod
+    def from_dict(cls, dict_of_parameters):
+        return cls(**dict_of_parameters)
