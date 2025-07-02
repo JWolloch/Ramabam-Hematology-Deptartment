@@ -240,8 +240,18 @@ def run_single_queue_simulation(parameter_dict: dict=None):
     transplant_nurse_station_scheduled_vs_actual_time_diff_var = []
 
     # Load cached patient profiles
-    with open('../cached_patient_profiles.json', 'r') as f:
-        cached_profiles = json.load(f)
+    cached_profiles_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cached_patient_profiles.json')
+    try:
+        with open(cached_profiles_path, 'r') as f:
+            cached_profiles = json.load(f)
+    except FileNotFoundError:
+        print(f"Error: Could not find cached_patient_profiles.json at {cached_profiles_path}")
+        print("Please ensure the file exists and try again.")
+        return
+    except json.JSONDecodeError:
+        print(f"Error: Could not parse cached_patient_profiles.json at {cached_profiles_path}")
+        print("Please ensure the file is valid JSON and try again.")
+        return
 
     pbar_outer = tqdm(total=simulation_configuration.num_epochs, desc="Running Simulation")
     for epoch in range(simulation_configuration.num_epochs):

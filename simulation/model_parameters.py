@@ -4,41 +4,41 @@ from dataclasses import dataclass
 @dataclass
 class ModelParametersMultiQueue:
 
-    scaler = 0.85
+    scaler: float = 0.85
 
     leukemia_doctor_1_mean_service_time_regular: int = 15
     leukemia_doctor_1_mean_service_time_complex: int = 20
     leukemia_doctor_1_number_of_regular_patients: int = int(8 * scaler)
     leukemia_doctor_1_number_of_complex_patients: int = int(6 * scaler)
-    leukemia_doctor_1_number_of_patients = leukemia_doctor_1_number_of_regular_patients + leukemia_doctor_1_number_of_complex_patients
+    leukemia_doctor_1_number_of_patients: int = leukemia_doctor_1_number_of_regular_patients + leukemia_doctor_1_number_of_complex_patients
     leukemia_doctor_1_probability_of_complex_patient: float = leukemia_doctor_1_number_of_complex_patients/(leukemia_doctor_1_number_of_regular_patients + leukemia_doctor_1_number_of_complex_patients)
 
     leukemia_doctor_2_mean_service_time_regular: int = 15
     leukemia_doctor_2_mean_service_time_complex: int = 20
     leukemia_doctor_2_number_of_regular_patients: int = int(8 * scaler)
     leukemia_doctor_2_number_of_complex_patients: int = 2
-    leukemia_doctor_2_number_of_patients = leukemia_doctor_2_number_of_regular_patients + leukemia_doctor_2_number_of_complex_patients
+    leukemia_doctor_2_number_of_patients: int = leukemia_doctor_2_number_of_regular_patients + leukemia_doctor_2_number_of_complex_patients
     leukemia_doctor_2_probability_of_complex_patient: float = leukemia_doctor_2_number_of_complex_patients/(leukemia_doctor_2_number_of_regular_patients + leukemia_doctor_2_number_of_complex_patients)
 
     transplant_doctor_1_mean_service_time_regular: int = 15
     transplant_doctor_1_mean_service_time_complex: int = 20
     transplant_doctor_1_number_of_regular_patients: int = int(12 * scaler)
     transplant_doctor_1_number_of_complex_patients: int = 1
-    transplant_doctor_1_number_of_patients = transplant_doctor_1_number_of_regular_patients + transplant_doctor_1_number_of_complex_patients
+    transplant_doctor_1_number_of_patients: int = transplant_doctor_1_number_of_regular_patients + transplant_doctor_1_number_of_complex_patients
     transplant_doctor_1_probability_of_complex_patient: float = transplant_doctor_1_number_of_complex_patients/(transplant_doctor_1_number_of_regular_patients + transplant_doctor_1_number_of_complex_patients)
 
     transplant_doctor_2_mean_service_time_regular: int = 15
     transplant_doctor_2_mean_service_time_complex: int = 20
     transplant_doctor_2_number_of_regular_patients: int = int(13 * scaler)
     transplant_doctor_2_number_of_complex_patients: int = int(4 * scaler)
-    transplant_doctor_2_number_of_patients = transplant_doctor_2_number_of_regular_patients + transplant_doctor_2_number_of_complex_patients
+    transplant_doctor_2_number_of_patients: int = transplant_doctor_2_number_of_regular_patients + transplant_doctor_2_number_of_complex_patients
     transplant_doctor_2_probability_of_complex_patient: float = transplant_doctor_2_number_of_complex_patients/(transplant_doctor_2_number_of_regular_patients + transplant_doctor_2_number_of_complex_patients)
 
     transplant_doctor_3_mean_service_time_regular: int = 15
     transplant_doctor_3_mean_service_time_complex: int = 20
     transplant_doctor_3_number_of_regular_patients: int = int(16 * scaler)
     transplant_doctor_3_number_of_complex_patients: int = 1
-    transplant_doctor_3_number_of_patients = transplant_doctor_3_number_of_regular_patients + transplant_doctor_3_number_of_complex_patients
+    transplant_doctor_3_number_of_patients: int = transplant_doctor_3_number_of_regular_patients + transplant_doctor_3_number_of_complex_patients
     transplant_doctor_3_probability_of_complex_patient: float = transplant_doctor_3_number_of_complex_patients/(transplant_doctor_3_number_of_regular_patients + transplant_doctor_3_number_of_complex_patients)
 
     number_of_other_patients: int = 20
@@ -81,8 +81,8 @@ class ModelParametersMultiQueue:
     nurse_station_5_assignment_probability_other: float = 1/5
     nurse_station_6_assignment_probability_other: float = 0
 
-    q_flow_mean_service_time = 1
-    secretary_mean_service_time = 4
+    q_flow_mean_service_time: int = 1
+    secretary_mean_service_time: int = 4
 
     probability_of_needing_long_blood_test: float = 0.25 #long = chemistry, o.w. only blood count
 
@@ -91,46 +91,81 @@ class ModelParametersMultiQueue:
 
     @classmethod
     def from_dict(cls, dict_of_parameters):
-        return cls(**dict_of_parameters)
+        # Create a copy of the parameters to avoid modifying the input
+        params = dict_of_parameters.copy()
+        
+        # Get scaler if provided, otherwise use default
+        scaler = params.pop('scaler', 0.85)
+        
+        # Create instance with remaining parameters
+        instance = cls(**params)
+        
+        # Update scaler and recalculate dependent values
+        instance.scaler = scaler
+        instance.leukemia_doctor_1_number_of_regular_patients = int(8 * scaler)
+        instance.leukemia_doctor_1_number_of_complex_patients = int(6 * scaler)
+        instance.leukemia_doctor_2_number_of_regular_patients = int(8 * scaler)
+        instance.transplant_doctor_1_number_of_regular_patients = int(12 * scaler)
+        instance.transplant_doctor_2_number_of_regular_patients = int(13 * scaler)
+        instance.transplant_doctor_2_number_of_complex_patients = int(4 * scaler)
+        instance.transplant_doctor_3_number_of_regular_patients = int(16 * scaler)
+        
+        # Update dependent calculations
+        instance.leukemia_doctor_1_number_of_patients = instance.leukemia_doctor_1_number_of_regular_patients + instance.leukemia_doctor_1_number_of_complex_patients
+        instance.leukemia_doctor_1_probability_of_complex_patient = instance.leukemia_doctor_1_number_of_complex_patients / instance.leukemia_doctor_1_number_of_patients
+        
+        instance.leukemia_doctor_2_number_of_patients = instance.leukemia_doctor_2_number_of_regular_patients + instance.leukemia_doctor_2_number_of_complex_patients
+        instance.leukemia_doctor_2_probability_of_complex_patient = instance.leukemia_doctor_2_number_of_complex_patients / instance.leukemia_doctor_2_number_of_patients
+        
+        instance.transplant_doctor_1_number_of_patients = instance.transplant_doctor_1_number_of_regular_patients + instance.transplant_doctor_1_number_of_complex_patients
+        instance.transplant_doctor_1_probability_of_complex_patient = instance.transplant_doctor_1_number_of_complex_patients / instance.transplant_doctor_1_number_of_patients
+        
+        instance.transplant_doctor_2_number_of_patients = instance.transplant_doctor_2_number_of_regular_patients + instance.transplant_doctor_2_number_of_complex_patients
+        instance.transplant_doctor_2_probability_of_complex_patient = instance.transplant_doctor_2_number_of_complex_patients / instance.transplant_doctor_2_number_of_patients
+        
+        instance.transplant_doctor_3_number_of_patients = instance.transplant_doctor_3_number_of_regular_patients + instance.transplant_doctor_3_number_of_complex_patients
+        instance.transplant_doctor_3_probability_of_complex_patient = instance.transplant_doctor_3_number_of_complex_patients / instance.transplant_doctor_3_number_of_patients
+        
+        return instance
 
 @dataclass
 class ModelParametersSingleQueue:
 
-    scaler = 0.85
+    scaler: float = 0.85
 
     leukemia_doctor_1_mean_service_time_regular: int = 15
     leukemia_doctor_1_mean_service_time_complex: int = 20
     leukemia_doctor_1_number_of_regular_patients: int = int(8 * scaler)
     leukemia_doctor_1_number_of_complex_patients: int = int(6 * scaler)
-    leukemia_doctor_1_number_of_patients = leukemia_doctor_1_number_of_regular_patients + leukemia_doctor_1_number_of_complex_patients
+    leukemia_doctor_1_number_of_patients: int = leukemia_doctor_1_number_of_regular_patients + leukemia_doctor_1_number_of_complex_patients
     leukemia_doctor_1_probability_of_complex_patient: float = leukemia_doctor_1_number_of_complex_patients/(leukemia_doctor_1_number_of_regular_patients + leukemia_doctor_1_number_of_complex_patients)
 
     leukemia_doctor_2_mean_service_time_regular: int = 15
     leukemia_doctor_2_mean_service_time_complex: int = 20
     leukemia_doctor_2_number_of_regular_patients: int = int(8 * scaler)
     leukemia_doctor_2_number_of_complex_patients: int = 2
-    leukemia_doctor_2_number_of_patients = leukemia_doctor_2_number_of_regular_patients + leukemia_doctor_2_number_of_complex_patients
+    leukemia_doctor_2_number_of_patients: int = leukemia_doctor_2_number_of_regular_patients + leukemia_doctor_2_number_of_complex_patients
     leukemia_doctor_2_probability_of_complex_patient: float = leukemia_doctor_2_number_of_complex_patients/(leukemia_doctor_2_number_of_regular_patients + leukemia_doctor_2_number_of_complex_patients)
 
     transplant_doctor_1_mean_service_time_regular: int = 15
     transplant_doctor_1_mean_service_time_complex: int = 20
     transplant_doctor_1_number_of_regular_patients: int = int(12 * scaler)
     transplant_doctor_1_number_of_complex_patients: int = 1
-    transplant_doctor_1_number_of_patients = transplant_doctor_1_number_of_regular_patients + transplant_doctor_1_number_of_complex_patients
+    transplant_doctor_1_number_of_patients: int = transplant_doctor_1_number_of_regular_patients + transplant_doctor_1_number_of_complex_patients
     transplant_doctor_1_probability_of_complex_patient: float = transplant_doctor_1_number_of_complex_patients/(transplant_doctor_1_number_of_regular_patients + transplant_doctor_1_number_of_complex_patients)
 
     transplant_doctor_2_mean_service_time_regular: int = 15
     transplant_doctor_2_mean_service_time_complex: int = 20
     transplant_doctor_2_number_of_regular_patients: int = int(13 * scaler)
     transplant_doctor_2_number_of_complex_patients: int = int(4 * scaler)
-    transplant_doctor_2_number_of_patients = transplant_doctor_2_number_of_regular_patients + transplant_doctor_2_number_of_complex_patients
+    transplant_doctor_2_number_of_patients: int = transplant_doctor_2_number_of_regular_patients + transplant_doctor_2_number_of_complex_patients
     transplant_doctor_2_probability_of_complex_patient: float = transplant_doctor_2_number_of_complex_patients/(transplant_doctor_2_number_of_regular_patients + transplant_doctor_2_number_of_complex_patients)
 
     transplant_doctor_3_mean_service_time_regular: int = 15
     transplant_doctor_3_mean_service_time_complex: int = 20
     transplant_doctor_3_number_of_regular_patients: int = int(16 * scaler)
     transplant_doctor_3_number_of_complex_patients: int = 1
-    transplant_doctor_3_number_of_patients = transplant_doctor_3_number_of_regular_patients + transplant_doctor_3_number_of_complex_patients
+    transplant_doctor_3_number_of_patients: int = transplant_doctor_3_number_of_regular_patients + transplant_doctor_3_number_of_complex_patients
     transplant_doctor_3_probability_of_complex_patient: float = transplant_doctor_3_number_of_complex_patients/(transplant_doctor_3_number_of_regular_patients + transplant_doctor_3_number_of_complex_patients)
 
     number_of_other_patients: int = 20
@@ -151,8 +186,8 @@ class ModelParametersSingleQueue:
 
     general_nurse_station_preparation_time_buffer: int = 3 #minutes for preparation
 
-    q_flow_mean_service_time = 1
-    secretary_mean_service_time = 4
+    q_flow_mean_service_time: int = 1
+    secretary_mean_service_time: int = 4
 
     probability_of_needing_long_blood_test: float = 0.25 #long = chemistry, o.w. only blood count
 
@@ -168,4 +203,39 @@ class ModelParametersSingleQueue:
 
     @classmethod
     def from_dict(cls, dict_of_parameters):
-        return cls(**dict_of_parameters)
+        # Create a copy of the parameters to avoid modifying the input
+        params = dict_of_parameters.copy()
+        
+        # Get scaler if provided, otherwise use default
+        scaler = params.pop('scaler', 0.85)
+        
+        # Create instance with remaining parameters
+        instance = cls(**params)
+        
+        # Update scaler and recalculate dependent values
+        instance.scaler = scaler
+        instance.leukemia_doctor_1_number_of_regular_patients = int(8 * scaler)
+        instance.leukemia_doctor_1_number_of_complex_patients = int(6 * scaler)
+        instance.leukemia_doctor_2_number_of_regular_patients = int(8 * scaler)
+        instance.transplant_doctor_1_number_of_regular_patients = int(12 * scaler)
+        instance.transplant_doctor_2_number_of_regular_patients = int(13 * scaler)
+        instance.transplant_doctor_2_number_of_complex_patients = int(4 * scaler)
+        instance.transplant_doctor_3_number_of_regular_patients = int(16 * scaler)
+        
+        # Update dependent calculations
+        instance.leukemia_doctor_1_number_of_patients = instance.leukemia_doctor_1_number_of_regular_patients + instance.leukemia_doctor_1_number_of_complex_patients
+        instance.leukemia_doctor_1_probability_of_complex_patient = instance.leukemia_doctor_1_number_of_complex_patients / instance.leukemia_doctor_1_number_of_patients
+        
+        instance.leukemia_doctor_2_number_of_patients = instance.leukemia_doctor_2_number_of_regular_patients + instance.leukemia_doctor_2_number_of_complex_patients
+        instance.leukemia_doctor_2_probability_of_complex_patient = instance.leukemia_doctor_2_number_of_complex_patients / instance.leukemia_doctor_2_number_of_patients
+        
+        instance.transplant_doctor_1_number_of_patients = instance.transplant_doctor_1_number_of_regular_patients + instance.transplant_doctor_1_number_of_complex_patients
+        instance.transplant_doctor_1_probability_of_complex_patient = instance.transplant_doctor_1_number_of_complex_patients / instance.transplant_doctor_1_number_of_patients
+        
+        instance.transplant_doctor_2_number_of_patients = instance.transplant_doctor_2_number_of_regular_patients + instance.transplant_doctor_2_number_of_complex_patients
+        instance.transplant_doctor_2_probability_of_complex_patient = instance.transplant_doctor_2_number_of_complex_patients / instance.transplant_doctor_2_number_of_patients
+        
+        instance.transplant_doctor_3_number_of_patients = instance.transplant_doctor_3_number_of_regular_patients + instance.transplant_doctor_3_number_of_complex_patients
+        instance.transplant_doctor_3_probability_of_complex_patient = instance.transplant_doctor_3_number_of_complex_patients / instance.transplant_doctor_3_number_of_patients
+        
+        return instance

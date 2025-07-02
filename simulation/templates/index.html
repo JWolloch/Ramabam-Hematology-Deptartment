@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hematology Department Simulation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .form-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-content {
+            padding: 2rem;
+        }
+
+        .section {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .section h2 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h2::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 2px;
+        }
+
+        .subsection {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .subsection h3 {
+            color: #374151;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .subsection h4 {
+            color: #6b7280;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin: 1rem 0 0.5rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"], input[type="text"] {
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .button-container {
+            text-align: center;
+            padding: 2rem;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        button[type="submit"] {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        #loading {
+            display: none;
+            color: #4f46e5;
+            font-weight: 500;
+            margin-left: 1rem;
+        }
+
+        #result {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        #result.success {
+            background-color: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        #result.error {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .loading-content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hematology Department Simulation</h1>
+            <p>Configure simulation parameters and analyze results</p>
+        </div>
+        
+        <div class="form-container">
+            <div class="form-header">
+                <h2>Simulation Parameters</h2>
+            </div>
+            
+            <form id="simulationForm" action="/run_simulation" method="POST">
+                <div class="form-content">
+                    <div class="section" id="multi-queue-section">
+                        <h2>Multi-Queue Parameters</h2>
+                        <div class="subsection" id="multi-leukemia-doctors">
+                            <h3>Leukemia Doctors</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Doctor 1 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_leukemia_doctor_1_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="multi_queue_leukemia_doctor_1_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 # Regular Patients</label>
+                                    <input type="number" name="multi_queue_leukemia_doctor_1_number_of_regular_patients" value="6">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 # Complex Patients</label>
+                                    <input type="number" name="multi_queue_leukemia_doctor_1_number_of_complex_patients" value="5">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_leukemia_doctor_2_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="multi_queue_leukemia_doctor_2_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 # Regular Patients</label>
+                                    <input type="number" name="multi_queue_leukemia_doctor_2_number_of_regular_patients" value="6">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 # Complex Patients</label>
+                                    <input type="number" name="multi_queue_leukemia_doctor_2_number_of_complex_patients" value="2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subsection" id="multi-transplant-doctors">
+                            <h3>Transplant Doctors</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Doctor 1 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_transplant_doctor_1_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="multi_queue_transplant_doctor_1_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 # Regular Patients</label>
+                                    <input type="number" name="multi_queue_transplant_doctor_1_number_of_regular_patients" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 # Complex Patients</label>
+                                    <input type="number" name="multi_queue_transplant_doctor_1_number_of_complex_patients" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_transplant_doctor_2_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="multi_queue_transplant_doctor_2_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 # Regular Patients</label>
+                                    <input type="number" name="multi_queue_transplant_doctor_2_number_of_regular_patients" value="11">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 # Complex Patients</label>
+                                    <input type="number" name="multi_queue_transplant_doctor_2_number_of_complex_patients" value="3">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 3 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_transplant_doctor_3_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 3 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="multi_queue_transplant_doctor_3_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 3 # Regular Patients</label>
+                                    <input type="number" name="multi_queue_transplant_doctor_3_number_of_regular_patients" value="13">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 3 # Complex Patients</label>
+                                    <input type="number" name="multi_queue_transplant_doctor_3_number_of_complex_patients" value="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subsection" id="multi-other-patients">
+                            <h3>Other Patients</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Number of Other Patients</label>
+                                    <input type="number" name="multi_queue_number_of_other_patients" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Complex Other Patient</label>
+                                    <input type="number" step="any" name="multi_queue_probability_of_complex_other_patient" value="0.2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subsection" id="multi-nurses">
+                            <h3>Nurses</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nurse Mean Service Time (Regular)</label>
+                                    <input type="number" name="multi_queue_nurse_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Mean Service Time (Complex)</label>
+                                    <input type="number" name="multi_queue_nurse_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Transplant Nurse Mean Service Time</label>
+                                    <input type="number" name="multi_queue_transplant_nurse_mean_service_time" value="30">
+                                </div>
+                            </div>
+                            
+                            <h4>Nurse Assignment Probabilities (Leukemia)</h4>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nurse Station 1 Assignment Probability (Leukemia)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_1_assignment_probability_leukemia" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 2 Assignment Probability (Leukemia)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_2_assignment_probability_leukemia" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 3 Assignment Probability (Leukemia)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_3_assignment_probability_leukemia" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 4 Assignment Probability (Leukemia)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_4_assignment_probability_leukemia" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 5 Assignment Probability (Leukemia)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_5_assignment_probability_leukemia" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 6 Assignment Probability (Leukemia)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_6_assignment_probability_leukemia" value="0">
+                                </div>
+                            </div>
+                            
+                            <h4>Nurse Assignment Probabilities (Transplant Regular)</h4>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nurse Station 1 Assignment Probability (Transplant Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_1_assignment_probability_transplant_regular" value="0.182">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 2 Assignment Probability (Transplant Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_2_assignment_probability_transplant_regular" value="0.182">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 3 Assignment Probability (Transplant Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_3_assignment_probability_transplant_regular" value="0.182">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 4 Assignment Probability (Transplant Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_4_assignment_probability_transplant_regular" value="0.182">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 5 Assignment Probability (Transplant Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_5_assignment_probability_transplant_regular" value="0.182">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 6 Assignment Probability (Transplant Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_6_assignment_probability_transplant_regular" value="0.091">
+                                </div>
+                            </div>
+                            
+                            <h4>Nurse Assignment Probabilities (Other)</h4>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nurse Station 1 Assignment Probability (Other)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_1_assignment_probability_other" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 2 Assignment Probability (Other)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_2_assignment_probability_other" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 3 Assignment Probability (Other)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_3_assignment_probability_other" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 4 Assignment Probability (Other)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_4_assignment_probability_other" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 5 Assignment Probability (Other)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_5_assignment_probability_other" value="0.2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Station 6 Assignment Probability (Other)</label>
+                                    <input type="number" step="any" name="multi_queue_nurse_station_6_assignment_probability_other" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subsection" id="multi-probabilities">
+                            <h3>Probabilities & Misc</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Q-Flow Mean Service Time</label>
+                                    <input type="number" name="multi_queue_q_flow_mean_service_time" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Secretary Mean Service Time</label>
+                                    <input type="number" name="multi_queue_secretary_mean_service_time" value="4">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Visiting Nurse (Leukemia)</label>
+                                    <input type="number" step="any" name="multi_queue_probability_of_visiting_nurse_leukemia" value="0.769">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Visiting Nurse (Transplant)</label>
+                                    <input type="number" step="any" name="multi_queue_probability_of_visiting_nurse_transplant" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Visiting Nurse (Other)</label>
+                                    <input type="number" step="any" name="multi_queue_probability_of_visiting_nurse_other" value="0.8">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Visiting Nurse (Transplant Regular)</label>
+                                    <input type="number" step="any" name="multi_queue_probability_of_visiting_nurse_transplant_regular" value="0.9">
+                                </div>
+                                <div class="form-group">
+                                    <label>Mean Time for Regular Blood Test</label>
+                                    <input type="number" name="multi_queue_mean_time_for_regular_blood_test" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Mean Time for Long Blood Test</label>
+                                    <input type="number" name="multi_queue_mean_time_for_long_blood_test" value="2">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Needing Long Blood Test</label>
+                                    <input type="number" step="any" name="multi_queue_probability_of_needing_long_blood_test" value="0.1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section" id="single-queue-section">
+                        <h2>Single-Queue Parameters</h2>
+                        <div class="subsection" id="single-leukemia-doctors">
+                            <h3>Leukemia Doctors</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Doctor 1 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="single_queue_leukemia_doctor_1_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="single_queue_leukemia_doctor_1_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 # Regular Patients</label>
+                                    <input type="number" name="single_queue_leukemia_doctor_1_number_of_regular_patients" value="6">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 # Complex Patients</label>
+                                    <input type="number" name="single_queue_leukemia_doctor_1_number_of_complex_patients" value="5">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="single_queue_leukemia_doctor_2_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="single_queue_leukemia_doctor_2_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 # Regular Patients</label>
+                                    <input type="number" name="single_queue_leukemia_doctor_2_number_of_regular_patients" value="6">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 # Complex Patients</label>
+                                    <input type="number" name="single_queue_leukemia_doctor_2_number_of_complex_patients" value="2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subsection" id="single-transplant-doctors">
+                            <h3>Transplant Doctors</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Doctor 1 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="single_queue_transplant_doctor_1_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="single_queue_transplant_doctor_1_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 # Regular Patients</label>
+                                    <input type="number" name="single_queue_transplant_doctor_1_number_of_regular_patients" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 1 # Complex Patients</label>
+                                    <input type="number" name="single_queue_transplant_doctor_1_number_of_complex_patients" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="single_queue_transplant_doctor_2_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="single_queue_transplant_doctor_2_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 # Regular Patients</label>
+                                    <input type="number" name="single_queue_transplant_doctor_2_number_of_regular_patients" value="11">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 2 # Complex Patients</label>
+                                    <input type="number" name="single_queue_transplant_doctor_2_number_of_complex_patients" value="3">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 3 Mean Service Time (Regular)</label>
+                                    <input type="number" step="any" name="single_queue_transplant_doctor_3_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 3 Mean Service Time (Complex)</label>
+                                    <input type="number" step="any" name="single_queue_transplant_doctor_3_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 3 # Regular Patients</label>
+                                    <input type="number" name="single_queue_transplant_doctor_3_number_of_regular_patients" value="13">
+                                </div>
+                                <div class="form-group">
+                                    <label>Doctor 3 # Complex Patients</label>
+                                    <input type="number" name="single_queue_transplant_doctor_3_number_of_complex_patients" value="1">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subsection" id="single-other-patients">
+                            <h3>Other Patients</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Number of Other Patients</label>
+                                    <input type="number" name="single_queue_number_of_other_patients" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Complex Other Patient</label>
+                                    <input type="number" step="any" name="single_queue_probability_of_complex_other_patient" value="0.2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subsection" id="single-nurses">
+                            <h3>Nurses</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Nurse Mean Service Time (Regular)</label>
+                                    <input type="number" name="single_queue_nurse_mean_service_time_regular" value="15">
+                                </div>
+                                <div class="form-group">
+                                    <label>Nurse Mean Service Time (Complex)</label>
+                                    <input type="number" name="single_queue_nurse_mean_service_time_complex" value="20">
+                                </div>
+                                <div class="form-group">
+                                    <label>Transplant Nurse Mean Service Time</label>
+                                    <input type="number" name="single_queue_transplant_nurse_mean_service_time" value="30">
+                                </div>
+                                <div class="form-group">
+                                    <label>General Nurse Station Assignment Probability (Transplant Regular)</label>
+                                    <input type="number" step="any" name="single_queue_general_nurse_station_assignment_probability_transplant_regular" value="0.909">
+                                </div>
+                                <div class="form-group">
+                                    <label>Transplant Nurse Station Assignment Probability (Transplant Regular)</label>
+                                    <input type="number" step="any" name="single_queue_transplant_nurse_station_assignment_probability_transplant_regular" value="0.091">
+                                </div>
+                                <div class="form-group">
+                                    <label>General Nurse Station Preparation Time Buffer</label>
+                                    <input type="number" name="single_queue_general_nurse_station_preparation_time_buffer" value="3">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="subsection" id="single-probabilities">
+                            <h3>Probabilities & Misc</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Q-Flow Mean Service Time</label>
+                                    <input type="number" name="single_queue_q_flow_mean_service_time" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Secretary Mean Service Time</label>
+                                    <input type="number" name="single_queue_secretary_mean_service_time" value="4">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Visiting Nurse (Leukemia)</label>
+                                    <input type="number" step="any" name="single_queue_probability_of_visiting_nurse_leukemia" value="0.769">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Visiting Nurse (Transplant)</label>
+                                    <input type="number" step="any" name="single_queue_probability_of_visiting_nurse_transplant" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Visiting Nurse (Other)</label>
+                                    <input type="number" step="any" name="single_queue_probability_of_visiting_nurse_other" value="0.8">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Visiting Nurse (Transplant Regular)</label>
+                                    <input type="number" step="any" name="single_queue_probability_of_visiting_nurse_transplant_regular" value="0.8">
+                                </div>
+                                <div class="form-group">
+                                    <label>Mean Time for Regular Blood Test</label>
+                                    <input type="number" name="single_queue_mean_time_for_regular_blood_test" value="40">
+                                </div>
+                                <div class="form-group">
+                                    <label>Mean Time for Long Blood Test</label>
+                                    <input type="number" name="single_queue_mean_time_for_long_blood_test" value="120">
+                                </div>
+                                <div class="form-group">
+                                    <label>Probability of Needing Long Blood Test</label>
+                                    <input type="number" step="any" name="single_queue_probability_of_needing_long_blood_test" value="0.25">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-container">
+                    <button type="submit" id="runSimulationBtn">Run Simulations</button>
+                </div>
+            </form>
+            
+            <div id="result" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Running simulations...</p>
+            <p>This may take a few minutes</p>
+        </div>
+    </div>
+
+    <script>
+        let parametersLoaded = false;
+        
+        // Function to get default parameters
+        async function getDefaultParameters() {
+            if (parametersLoaded) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/get_default_params');
+                const data = await response.json();
+                
+                // Fill multi-queue parameters
+                Object.entries(data.multi_queue).forEach(([key, value]) => {
+                    const input = document.querySelector(`input[name="multi_queue_${key}"]`);
+                    if (input) {
+                        input.value = value;
+                    }
+                });
+                
+                // Fill single-queue parameters
+                Object.entries(data.single_queue).forEach(([key, value]) => {
+                    const input = document.querySelector(`input[name="single_queue_${key}"]`);
+                    if (input) {
+                        input.value = value;
+                    }
+                });
+                
+                parametersLoaded = true;
+            } catch (error) {
+                console.error('Error fetching default parameters:', error);
+            }
+        }
+
+        // Function to collect form data
+        function collectFormData() {
+            const multiQueueParams = {};
+            const singleQueueParams = {};
+            
+            // Collect multi-queue parameters
+            document.querySelectorAll('input[name^="multi_queue_"]').forEach(input => {
+                const key = input.name.replace('multi_queue_', '');
+                if (input.value !== '') {
+                    multiQueueParams[key] = input.value;
+                }
+            });
+            
+            // Collect single-queue parameters
+            document.querySelectorAll('input[name^="single_queue_"]').forEach(input => {
+                const key = input.name.replace('single_queue_', '');
+                if (input.value !== '') {
+                    singleQueueParams[key] = input.value;
+                }
+            });
+            
+            return {
+                multi_queue_params: multiQueueParams,
+                single_queue_params: singleQueueParams
+            };
+        }
+
+        // Function to run simulation
+        async function runSimulation(event) {
+            event.preventDefault();
+            
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // Show loading overlay
+                loadingOverlay.style.display = 'flex';
+                resultDiv.style.display = 'none';
+                
+                // Collect form data
+                const formData = collectFormData();
+                
+                // Send request to run simulation
+                const response = await fetch('/run_simulation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Show success message
+                    resultDiv.textContent = data.message;
+                    resultDiv.className = 'success';
+                    resultDiv.style.display = 'block';
+                    
+                    // Wait a moment to show the success message
+                    setTimeout(() => {
+                        // Redirect to results page
+                        window.location.href = data.redirect;
+                    }, 1000);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                // Show error message
+                resultDiv.textContent = `Error: ${error.message}`;
+                resultDiv.className = 'error';
+                resultDiv.style.display = 'block';
+            } finally {
+                // Hide loading overlay
+                loadingOverlay.style.display = 'none';
+            }
+        }
+
+        // Add event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            getDefaultParameters();
+            
+            // Add form submit handler
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', runSimulation);
+            }
+        });
+    </script>
+</body>
+</html> 
