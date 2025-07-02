@@ -187,15 +187,15 @@ def generate_patients_from_profile(calendar: SimClasses.EventCalendar, parameter
             for patient_data in patients_data:
                 patient = OtherPatient(
                     create_patient_schedule(patient_data['arrival_time']),
-                    patient_data['doctor_name'],
+                    'other',
                     parameters.probability_of_complex_other_patient,
                     parameters.probability_of_visiting_nurse_other,
                     parameters.probability_of_needing_long_blood_test
                 )
                 # Set the specific attributes from the profile
-                patient.complexity_level = patient_data['complexity']
-                patient.visits_nurse = patient_data['visits_nurse']
-                patient.needs_long_blood_test = patient_data['needs_long_blood_test']
+                patient._complexity_level = patient_data['complexity']
+                patient._visits_nurse = patient_data['visits_nurse']
+                patient._needs_long_blood_test = patient_data['needs_long_blood_test']
                 patients.append(patient)
         else:
             # Handle doctor-specific patients
@@ -226,9 +226,9 @@ def generate_patients_from_profile(calendar: SimClasses.EventCalendar, parameter
                     )
                 
                 # Set the specific attributes from the profile
-                patient.complexity_level = patient_data['complexity']
-                patient.visits_nurse = patient_data['visits_nurse']
-                patient.needs_long_blood_test = patient_data['needs_long_blood_test']
+                patient._complexity_level = patient_data['complexity']
+                patient._visits_nurse = patient_data['visits_nurse']
+                patient._needs_long_blood_test = patient_data['needs_long_blood_test']
                 patients.append(patient)
         
         # Schedule arrivals for all patients

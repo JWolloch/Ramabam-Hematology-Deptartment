@@ -23,7 +23,7 @@ class TransplantPatient(Patient):
     def _determine_if_visits_nurse(self) -> bool:
         if self._complexity_level == "regular":
             u = random.uniform(0, 1)
-            if u < 1:
+            if u < 0.8:
                 return True
             else:
                 return False
