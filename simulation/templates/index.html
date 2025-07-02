@@ -763,33 +763,6 @@
             }
         }
 
-        // Function to collect form data
-        function collectFormData() {
-            const multiQueueParams = {};
-            const singleQueueParams = {};
-            
-            // Collect multi-queue parameters
-            document.querySelectorAll('input[name^="multi_queue_"]').forEach(input => {
-                const key = input.name.replace('multi_queue_', '');
-                if (input.value !== '') {
-                    multiQueueParams[key] = input.value;
-                }
-            });
-            
-            // Collect single-queue parameters
-            document.querySelectorAll('input[name^="single_queue_"]').forEach(input => {
-                const key = input.name.replace('single_queue_', '');
-                if (input.value !== '') {
-                    singleQueueParams[key] = input.value;
-                }
-            });
-            
-            return {
-                multi_queue_params: multiQueueParams,
-                single_queue_params: singleQueueParams
-            };
-        }
-
         // Function to run simulation
         async function runSimulation(event) {
             event.preventDefault();
@@ -803,16 +776,18 @@
                 resultDiv.style.display = 'none';
                 
                 // Collect form data
-                const formData = collectFormData();
+                const formData = new FormData(event.target);
                 
                 // Send request to run simulation
                 const response = await fetch('/run_simulation', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
+                    body: formData
                 });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Server error occurred');
+                }
                 
                 const data = await response.json();
                 
@@ -828,9 +803,10 @@
                         window.location.href = data.redirect;
                     }, 1000);
                 } else {
-                    throw new Error(data.message);
+                    throw new Error(data.message || 'Unknown error occurred');
                 }
             } catch (error) {
+                console.error('Error details:', error);
                 // Show error message
                 resultDiv.textContent = `Error: ${error.message}`;
                 resultDiv.className = 'error';
@@ -846,7 +822,7 @@
             getDefaultParameters();
             
             // Add form submit handler
-            const form = document.querySelector('form');
+            const form = document.getElementById('simulationForm');
             if (form) {
                 form.addEventListener('submit', runSimulation);
             }

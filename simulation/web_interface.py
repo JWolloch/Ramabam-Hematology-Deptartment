@@ -41,7 +41,24 @@ def get_default_params():
 @app.route('/run_simulation', methods=['POST'])
 def run_simulation():
     try:
-        data = request.get_json()
+        # Add logging for request content type and data
+        print("Content-Type:", request.content_type)
+        print("Raw Data:", request.get_data())
+        
+        # Handle both JSON and form data
+        if request.content_type and 'application/json' in request.content_type:
+            data = request.get_json(force=True)
+        else:
+            # Handle form data
+            data = {
+                'multi_queue_params': {},
+                'single_queue_params': {}
+            }
+            for key, value in request.form.items():
+                if key.startswith('multi_queue_'):
+                    data['multi_queue_params'][key.replace('multi_queue_', '')] = value
+                elif key.startswith('single_queue_'):
+                    data['single_queue_params'][key.replace('single_queue_', '')] = value
         
         # Convert parameters to float/int where needed
         multi_queue_params = {}
@@ -49,22 +66,30 @@ def run_simulation():
         
         if data.get('multi_queue_params'):
             for key, value in data['multi_queue_params'].items():
-                if isinstance(value, str):
-                    if '.' in value:
-                        multi_queue_params[key] = float(value)
+                try:
+                    if isinstance(value, str):
+                        if '.' in value:
+                            multi_queue_params[key] = float(value)
+                        else:
+                            multi_queue_params[key] = int(value)
                     else:
-                        multi_queue_params[key] = int(value)
-                else:
+                        multi_queue_params[key] = value
+                except ValueError as e:
+                    print(f"Error converting {key}: {value} - {str(e)}")
                     multi_queue_params[key] = value
         
         if data.get('single_queue_params'):
             for key, value in data['single_queue_params'].items():
-                if isinstance(value, str):
-                    if '.' in value:
-                        single_queue_params[key] = float(value)
+                try:
+                    if isinstance(value, str):
+                        if '.' in value:
+                            single_queue_params[key] = float(value)
+                        else:
+                            single_queue_params[key] = int(value)
                     else:
-                        single_queue_params[key] = int(value)
-                else:
+                        single_queue_params[key] = value
+                except ValueError as e:
+                    print(f"Error converting {key}: {value} - {str(e)}")
                     single_queue_params[key] = value
         
         # Run simulations
@@ -77,9 +102,13 @@ def run_simulation():
         })
     
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print("Error details:", error_details)
         return jsonify({
             'status': 'error',
-            'message': f'Error running simulations: {str(e)}'
+            'message': f'Error running simulations: {str(e)}',
+            'details': error_details
         }), 500
 
 @app.route('/results')
