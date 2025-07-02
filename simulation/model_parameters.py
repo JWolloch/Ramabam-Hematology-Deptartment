@@ -91,7 +91,7 @@ class ModelParametersMultiQueue:
 @dataclass
 class ModelParametersSingleQueue:
 
-    scaler = 0.8
+    scaler = 0.85
 
     leukemia_doctor_1_mean_service_time_regular: int = 15
     leukemia_doctor_1_mean_service_time_complex: int = 20

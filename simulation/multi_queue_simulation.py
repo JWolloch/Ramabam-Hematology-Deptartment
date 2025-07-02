@@ -9,6 +9,7 @@ from python_sim import SimFunctions, SimClasses
 from model_parameters import ModelParametersMultiQueue
 from simulation_configuration import SimulationConfiguration
 import utils as utils
+import json
 
 
 # Initializing event calendar
@@ -301,10 +302,17 @@ nurse_station_4_scheduled_vs_actual_time_diff_var = []
 nurse_station_5_scheduled_vs_actual_time_diff_var = []
 nurse_station_6_scheduled_vs_actual_time_diff_var = []
 
+# Load cached patient profiles
+with open('cached_patient_profiles.json', 'r') as f:
+    cached_profiles = json.load(f)
+
 pbar_outer = tqdm(total=simulation_configuration.num_epochs, desc="Running Simulation")
 for epoch in range(simulation_configuration.num_epochs):
     SimFunctions.SimFunctionsInit(Calendar)
-    list_of_patients = utils.generate_patients(Calendar, model_parameters)
+    
+    # Use cached profile for this epoch
+    profile = cached_profiles[epoch % len(cached_profiles)]
+    list_of_patients = utils.generate_patients_from_profile(Calendar, model_parameters, profile)
     for patient_list in list_of_patients:
         for patient in patient_list:
             if patient.visits_nurse:
@@ -655,9 +663,9 @@ for epoch in range(simulation_configuration.num_epochs):
 
     if epoch == 0:
         if simulation_configuration.personalize_schedule:
-            utils.generate_patient_attributes_csv(list_of_patients, "results_directory/multi_queue/personalized/patient_attributes.csv")
+            utils.generate_patient_attributes_csv(list_of_patients, "results_directory/same_patient_profiles/multi_queue/personalized/patient_attributes.csv")
         else:
-            utils.generate_patient_attributes_csv(list_of_patients, "results_directory/multi_queue/current_state/patient_attributes.csv")
+            utils.generate_patient_attributes_csv(list_of_patients, "results_directory/same_patient_profiles/multi_queue/current_state/patient_attributes.csv")
 
     pbar_outer.set_description(f"Running Simulation - {epoch+1}/{simulation_configuration.num_epochs}")
 
@@ -794,13 +802,13 @@ averages_df = pd.DataFrame({
     "nurse_station_6_scheduled_vs_actual_time_diff_avg": nurse_station_6_scheduled_vs_actual_time_diff_avg
     })
 
-os.makedirs("results_directory/multi_queue", exist_ok=True)
+os.makedirs("results_directory/same_patient_profiles/multi_queue", exist_ok=True)
 if simulation_configuration.personalize_schedule:
-    averages_df.to_csv(f"results_directory/multi_queue/personalized/averages_data.csv")
-    print(f"Simulation Results Saved to results_directory/multi_queue/personalized/averages_data.csv")
+    averages_df.to_csv(f"results_directory/same_patient_profiles/multi_queue/personalized/averages_data.csv")
+    print(f"Simulation Results Saved to results_directory/same_patient_profiles/multi_queue/personalized/averages_data.csv")
 else:
-    averages_df.to_csv(f"results_directory/multi_queue/current_state/averages_data.csv")
-    print(f"Simulation Results Saved to results_directory/multi_queue/current_state/averages_data.csv")
+    averages_df.to_csv(f"results_directory/same_patient_profiles/multi_queue/current_state/averages_data.csv")
+    print(f"Simulation Results Saved to results_directory/same_patient_profiles/multi_queue/current_state/averages_data.csv")
 print("**********************************************************************************")
 print("Means of the simulation results:")
 print(averages_df.mean())
@@ -881,13 +889,13 @@ variances_df = pd.DataFrame({
     "nurse_station_6_scheduled_vs_actual_time_diff_var": nurse_station_6_scheduled_vs_actual_time_diff_var
 })
 
-os.makedirs("results_directory/multi_queue", exist_ok=True)
+os.makedirs("results_directory/same_patient_profiles/multi_queue", exist_ok=True)
 if simulation_configuration.personalize_schedule:
-    variances_df.to_csv(f"results_directory/multi_queue/personalized/variances_data.csv")
-    print("Simulation Variance Results Saved to results_directory/multi_queue/personalized/variances_data.csv")
+    variances_df.to_csv(f"results_directory/same_patient_profiles/multi_queue/personalized/variances_data.csv")
+    print("Simulation Variance Results Saved to results_directory/same_patient_profiles/multi_queue/personalized/variances_data.csv")
 else:
-    variances_df.to_csv(f"results_directory/multi_queue/current_state/variances_data.csv")
-    print("Simulation Variance Results Saved to results_directory/multi_queue/current_state/variances_data.csv")
+    variances_df.to_csv(f"results_directory/same_patient_profiles/multi_queue/current_state/variances_data.csv")
+    print("Simulation Variance Results Saved to results_directory/same_patient_profiles/multi_queue/current_state/variances_data.csv")
 print("**********************************************************************************")
 
 # Number of epochs

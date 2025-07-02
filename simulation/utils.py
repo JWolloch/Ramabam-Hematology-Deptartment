@@ -175,6 +175,70 @@ def layered_patient_arrival_schedule(num_patients: int, start: int = 30, end: in
     return all_slots[:num_patients]
 
 
+def generate_patients_from_profile(calendar: SimClasses.EventCalendar, parameters: ModelParametersMultiQueue | ModelParametersSingleQueue, profile: dict):
+    """Generate patients from a cached profile instead of random generation"""
+    list_of_patients = []
+    
+    # Generate patients for each doctor based on the profile
+    for doctor_name, patients_data in profile['patient_details'].items():
+        if doctor_name == 'other_patients':
+            # Handle other patients
+            patients = []
+            for patient_data in patients_data:
+                patient = OtherPatient(
+                    create_patient_schedule(patient_data['arrival_time']),
+                    patient_data['doctor_name'],
+                    parameters.probability_of_complex_other_patient,
+                    parameters.probability_of_visiting_nurse_other,
+                    parameters.probability_of_needing_long_blood_test
+                )
+                # Set the specific attributes from the profile
+                patient.complexity_level = patient_data['complexity']
+                patient.visits_nurse = patient_data['visits_nurse']
+                patient.needs_long_blood_test = patient_data['needs_long_blood_test']
+                patients.append(patient)
+        else:
+            # Handle doctor-specific patients
+            patients = []
+            for patient_data in patients_data:
+                if 'leukemia' in doctor_name:
+                    patient = LeukemiaPatient(
+                        create_patient_schedule(patient_data['arrival_time']),
+                        patient_data['doctor_name'],
+                        parameters.leukemia_doctor_1_probability_of_complex_patient if '1' in doctor_name else parameters.leukemia_doctor_2_probability_of_complex_patient,
+                        parameters.probability_of_visiting_nurse_leukemia,
+                        parameters.probability_of_needing_long_blood_test
+                    )
+                elif 'transplant' in doctor_name:
+                    if '1' in doctor_name:
+                        complexity_prob = parameters.transplant_doctor_1_probability_of_complex_patient
+                    elif '2' in doctor_name:
+                        complexity_prob = parameters.transplant_doctor_2_probability_of_complex_patient
+                    else:
+                        complexity_prob = parameters.transplant_doctor_3_probability_of_complex_patient
+                    
+                    patient = TransplantPatient(
+                        create_patient_schedule(patient_data['arrival_time']),
+                        patient_data['doctor_name'],
+                        complexity_prob,
+                        parameters.probability_of_visiting_nurse_transplant,
+                        parameters.probability_of_needing_long_blood_test
+                    )
+                
+                # Set the specific attributes from the profile
+                patient.complexity_level = patient_data['complexity']
+                patient.visits_nurse = patient_data['visits_nurse']
+                patient.needs_long_blood_test = patient_data['needs_long_blood_test']
+                patients.append(patient)
+        
+        # Schedule arrivals for all patients
+        for patient in patients:
+            patient.schedule_arrival(calendar)
+        
+        list_of_patients.append(patients)
+    
+    return list_of_patients
+
 def generate_patients(calendar: SimClasses.EventCalendar,parameters: ModelParametersMultiQueue | ModelParametersSingleQueue):
     leukemia_doctor_1_patients = initialize_patients(
         layered_patient_arrival_schedule(
