@@ -69,11 +69,18 @@ const stationData = {
     attributes: ['queue_length'],
     methods: ['enqueue', 'dequeue'],
   },
+  queue_nurse_6: {
+    name: 'Queue to Nurse 6',
+    description: 'Dedicated waiting line for Nurse 6.',
+    attributes: ['queue_length'],
+    methods: ['enqueue', 'dequeue'],
+  },
   nurse_1: { name: 'Nurse 1', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
   nurse_2: { name: 'Nurse 2', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
   nurse_3: { name: 'Nurse 3', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
   nurse_4: { name: 'Nurse 4', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
   nurse_5: { name: 'Nurse 5', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
+  nurse_6: { name: 'Nurse 6', attributes: ['mean_service_duration_regular_treatment', 'mean_service_treatment_complex_treatment'], methods: ['treat_patient'] },
   blood_test_lab: { name: 'Blood Test Lab', attributes: [''], methods: ['analyze_sample'] },
   leukemia_doctor_1: { name: 'Leukemia Doctor 1', attributes: ['specialty'], methods: ['diagnose'] },
   leukemia_doctor_2: { name: 'Leukemia Doctor 2', attributes: ['specialty'], methods: ['diagnose'] },
@@ -240,7 +247,7 @@ const TransplantDoctorQueueNodeStyle = {
   justifyContent: 'center',
 };
 
-const nurseY = [-300, -150, 0, 150, 300];
+const nurseY = [-300, -150, 0, 150, 300, 450];
 
 const nodes = [
   { id: 'arrival', data: { label: 'Arrival' }, position: { x: 0, y: 0 }, style: arrivalNodeStyle },
@@ -249,7 +256,8 @@ const nodes = [
   { id: 'queue_secretary', type: 'queue', data: { label: 'Queue to Secretary' }, position: { x: 775, y: -7.5 }, style: SecretaryQueueNodeStyle },
   { id: 'secretary_station', data: { label: 'Secretary Station' }, position: { x: 1000, y: 0 }, style: secretaryNodeStyle },
   { id: 'queue_nurse', type: 'queue', data: { label: 'Queue to Nurses' }, position: { x: 1275, y: -7.5 }, style: NurseQueueNodeStyle },
-  ...[1, 2, 3, 4, 5].map((i, idx) => ({
+  { id: 'queue_nurse_6', type: 'queue', data: { label: 'Queue to Nurse 6' }, position: { x: 1275, y: 442.5 }, style: NurseQueueNodeStyle },
+  ...[1, 2, 3, 4, 5, 6].map((i, idx) => ({
     id: `nurse_${i}`,
     data: { label: `Nurse ${i}` },
     position: { x: 1500, y: nurseY[idx] },
@@ -309,13 +317,13 @@ const edges = [
     target: `nurse_${i}`,
     style: { stroke: '#f8bbd0', strokeWidth: 4 },
   })),
-  ...[1, 2, 3, 4, 5].map(i => ({
+  ...[1, 2, 3, 4, 5, 6].map(i => ({
     id: `transplant1-nurse_${i}`,
     source: `nurse_${i}`,
     target: 'transplant_doctor',
     style: { stroke: '#6a1b9a', strokeWidth: 4 },
   })),
-  ...[1, 2, 3, 4, 5].map(i => ({
+  ...[1, 2, 3, 4, 5, 6].map(i => ({
     id: `transplant2-nurse_${i}`,
     source: `nurse_${i}`,
     target: 'blood_test_lab',
@@ -327,6 +335,9 @@ const edges = [
   { id: 'queue_transplant_doctor-transplant_doctor', source: 'queue_transplant_doctor', target: 'transplant_doctor', style: { stroke: '#ec407a', strokeWidth: 4 } },
   { id: 'queue_leukemia_doctor_1-leukemia_doctor_1', source: 'queue_leukemia_doctor_1', target: 'leukemia_doctor_1', style: { stroke: '#42a5f5', strokeWidth: 4 } },
   { id: 'queue_leukemia_doctor_2-leukemia_doctor_2', source: 'queue_leukemia_doctor_2', target: 'leukemia_doctor_2', style: { stroke: '#42a5f5', strokeWidth: 4 } },
+  // Nurse 6 dedicated queue edges (always present)
+  { id: 'secretary_station-queue_nurse_6', source: 'secretary_station', target: 'queue_nurse_6', style: { stroke: '#f8bbd0', strokeWidth: 4 } },
+  { id: 'queue_nurse_6-nurse_6', source: 'queue_nurse_6', target: 'nurse_6', style: { stroke: '#f8bbd0', strokeWidth: 4 } },
 ];
 
 export default function App() {
